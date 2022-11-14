@@ -1,5 +1,6 @@
 package Modelo;
 
+import java.time.Period;
 import java.util.Date;
 
 public class Arriendo {
@@ -8,6 +9,7 @@ public class Arriendo {
     private Date fechaDevolucion;
     private EstadoArriendo estado;
     private Cliente cliente;
+    private DetalleArriendo detalleArriendo;
 
     public Arriendo(long codigo, Date fechaInicio, Cliente cliente) {
         this.codigo = codigo;
@@ -44,13 +46,45 @@ public class Arriendo {
     public void addDetalleArriendo(Equipo equipo){
         Arriendo DetalleArriendo=new Arriendo();
     }
-    public int getNumeroDiasArriendo(){
 
+    public int getNumeroDiasArriendo(){
+        //trabajar con metodos Date.
+if (estado ==EstadoArriendo.DEVUELTO) {
+    if (fechaInicio.equals(fechaDevolucion)){
+        return 1;
+    }else{
+        int milisegundos = 86400000;
+        int totDias = (int) (fechaInicio.getTime() - fechaDevolucion.getTime()) / milisegundos;
+        return totDias;
     }
+}else {
+    return 0;
+}
+}
     public long getMontoTotal(){
 
+        if (estado==EstadoArriendo.DEVUELTO){
+            int totPagar;
+            totPagar=(getNumeroDiasArriendo()* (int) detalleArriendo.getPrecioAplicado());
+            return totPagar;
+        }
+if (estado==EstadoArriendo.ENTREGADO){
+    return detalleArriendo.getPrecioAplicado();
+}
+else{
+    return 0;
+}
     }
     public String[][] getDetallesToString(){
+        //Trabajar con el size del arreglo
+        String [][] detalles= new String[3][];
+        if (estado==EstadoArriendo.INICIADO) {
+
+            return //matriz vacía
+        }else{
+           return //matriz con codigo, descripcion y precio de los equipos incluidos en el arriendo.
+
+        }
 
     }
     public Cliente getCliente(){
