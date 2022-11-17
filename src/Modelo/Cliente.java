@@ -17,6 +17,7 @@ public class Cliente {
         this.telefono=tel;
         this.nombre=nom;
         this.rut = rut;
+        activo=true;
     }
 
     public String getRut() {
@@ -33,6 +34,19 @@ public class Cliente {
 
     public String getTelefono() {
         return telefono;
+    }
+    public boolean isActivo(){
+if (activo=true){
+    return true;
+}else{
+    return false;
+}
+    }
+    public void setActivo(){
+        activo=true;
+    }
+    public void setInactivo(){
+        activo=false;
     }
 
     @Override
@@ -53,9 +67,6 @@ public class Cliente {
         return Objects.hash(rut, nombre, direccion, telefono, activo);
     }
 
-    public boolean isActivo(){
-        return activo=true;
-    }
 
 }
 

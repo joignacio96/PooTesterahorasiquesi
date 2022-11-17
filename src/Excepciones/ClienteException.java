@@ -1,4 +1,7 @@
 package Excepciones;
 
-public class ClienteException {
+public class ClienteException extends java.lang.Exception {
+    public ClienteException(String message) {
+
+    }
 }
