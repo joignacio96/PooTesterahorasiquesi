@@ -76,13 +76,13 @@ else{
 }
     }
     public String[][] getDetallesToString(){
-        //Trabajar con el size del arreglo
-        String [][] detalles= new String[3][];
         if (estado==EstadoArriendo.INICIADO) {
-
-            return //matriz vacía
-        }else{
-           return //matriz con codigo, descripcion y precio de los equipos incluidos en el arriendo.
+            String [][] arregloVacio= {};
+        return arregloVacio;
+        }
+        else{
+            String [][] arregloDetalles= new String[][3];
+           return String [][]  //matriz con codigo, descripcion y precio de los equipos incluidos en el arriendo.
 
         }
 
@@ -91,6 +91,7 @@ else{
         return cliente;
     }
     public Equipo [] getEquipos(){
+        return d
 
     }
 }

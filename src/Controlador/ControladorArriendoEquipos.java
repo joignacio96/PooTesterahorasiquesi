@@ -6,23 +6,23 @@ import Modelo.Equipo;
 import java.util.ArrayList;
 
 public class ControladorArriendoEquipos {
-        private static Controlador.ControladorArriendoEquipos instancia = null;
+        private static Controlador.ControladorArriendoEquipos instance = null;
         private final ArrayList<Cliente> clientes;
         private final ArrayList<Equipo> equipos;
         private ControladorArriendoEquipos() {
             clientes = new ArrayList<>();
             equipos = new ArrayList<>();
         }
-        public static Controlador.ControladorArriendoEquipos getInstancia() {
-            if (instancia == null) {
-                instancia = new Controlador.ControladorArriendoEquipos();
+        public static Controlador.ControladorArriendoEquipos getInstance() {
+            if (instance == null) {
+                instance = new Controlador.ControladorArriendoEquipos();
             }
-            return instancia;
+            return instance;
         }
-        public void createCliente(String rut,String nom,String dir, String tel) {
+        public void creaCliente(String rut, String nom, String dir, String tel) {
             clientes.add(new Cliente(rut,nom,dir,tel));
         }
-        public void createEquipo(long codigo, String descripcion, long precioArriendoDia) {
+        public void creaEquipo(long codigo, String descripcion, long precioArriendoDia) {
             equipos.add(new Equipo(codigo,descripcion,precioArriendoDia));
         }
         public String [][] listaClientes(){
@@ -49,6 +49,9 @@ public class ControladorArriendoEquipos {
                 i++;
             }
             return equiposArr;
+        }
+        public long creaArriendo (String rutCliente){
+
         }
     }
 

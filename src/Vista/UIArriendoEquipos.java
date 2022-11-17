@@ -4,17 +4,14 @@ import Controlador.ControladorArriendoEquipos;
 import java.util.Scanner;
 
 public class UIArriendoEquipos {
-    private static UIArriendoEquipos instancia=null;
-    private final Scanner teclado;
-    private UIArriendoEquipos(){
-        teclado = new Scanner(System.in);
-        teclado.useDelimiter("[\t|\r\n]+");
-    }
-    public static UIArriendoEquipos getInstancia() {
-        if (instancia == null) {
-            instancia = new UIArriendoEquipos();
+    private static UIArriendoEquipos instance=null;
+    private Scanner teclado;
+    private UIArriendoEquipos(){}
+    public static UIArriendoEquipos getInstance() {
+        if (instance == null) {
+            instance = new UIArriendoEquipos();
         }
-        return instancia;
+        return instance;
     }
     public void menu() {
         int opcion;
@@ -35,14 +32,14 @@ public class UIArriendoEquipos {
                 case 3 -> listaClientes();
                 case 4 -> listaEquipos();
                 case 5 -> {}
-                default -> System.out.println("\nIngreso no valido :(");
+                default -> System.out.println("\nIngreso no valido");
             }
-        } while (opcion!=4);
+        } while (opcion!=5);
         teclado.close();
     }
 
     private void listaClientes() {
-        String [][] datosClientes= ControladorArriendoEquipos.getInstancia().listaClientes();
+        String [][] datosClientes= ControladorArriendoEquipos.getInstance().listaClientes();
         int i=0;
         if(datosClientes.length>0) {
             System.out.println("\nLISTADO DE CLIENTES");
@@ -60,7 +57,7 @@ public class UIArriendoEquipos {
     }
 
     private void listaEquipos() {
-        String [][] datosEquipos= ControladorArriendoEquipos.getInstancia().listaEquipos();
+        String [][] datosEquipos= ControladorArriendoEquipos.getInstance().listaEquipos();
         if(datosEquipos.length>0){
             System.out.println("\nLISTADO DE EQUIPOS");
             System.out.println("------------");
@@ -84,7 +81,7 @@ public class UIArriendoEquipos {
         dir = teclado.next();
         System.out.println("Telefono: ");
         tel=teclado.next();
-        ControladorArriendoEquipos.getInstancia().createCliente(rut,nom,dir,tel);
+        ControladorArriendoEquipos.getInstance().creaCliente(rut,nom,dir,tel);
     }
     private void creaEquipo() {
         String descripcion;
@@ -96,7 +93,7 @@ public class UIArriendoEquipos {
         descripcion = teclado.next();
         System.out.print("Precio arriendo por dia: ");
         precioArriendoDia = teclado.nextLong();
-        ControladorArriendoEquipos.getInstancia().createEquipo(codigo,descripcion,precioArriendoDia);
+        ControladorArriendoEquipos.getInstance().creaEquipo(codigo,descripcion,precioArriendoDia);
     }
 }
 
