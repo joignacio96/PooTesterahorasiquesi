@@ -37,8 +37,8 @@ public class Equipo {
         this.estado = estado;
     }
     public void addDetalleArriendo (DetalleArriendo detalle){
-ArrayList<DetalleArriendo>arriendo=new ArrayList<>();
-arriendo.add(detalle);
+        ArrayList<DetalleArriendo>arriendo=new ArrayList<>();
+        arriendo.add(detalle);
     }
 
     public boolean isArrendado(){

@@ -3,6 +3,7 @@ package Modelo;
 import java.time.Period;
 import java.util.ArrayList;
 import java.time.LocalDate;
+import java.util.Date;
 
 public class Arriendo {
     private long codigo;
@@ -43,11 +44,12 @@ public class Arriendo {
     public void setEstado(EstadoArriendo estado) {
         this.estado = estado;
     }
+
     public void addDetalleArriendo(Equipo equipo) {
-        DetalleArriendo detalle = new DetalleArriendo(equipo.getPrecioArriendoDia(), equipo,this);
-        detalleArriendo.add(detalle);
+        DetalleArriendo detalle = new DetalleArriendo(equipo.getPrecioArriendoDia(), equipo, this);
+        detallesArriendo.add(detalle);
         equipo.addDetalleArriendo(detalle);
-     }
+    }
 
     public int getNumeroDiasArriendo() {
         //trabajar con metodos LocalDate.
@@ -62,10 +64,6 @@ public class Arriendo {
             return 0;
         }
     }
-}else {
-    return 0;
-}
-}
 
     public long getMontoTotal() {
 
@@ -79,31 +77,9 @@ public class Arriendo {
             return total;
         }
 
-        if (estado.equals(EstadoArriendo.INICIADO)) {
-
-            for (DetalleArriendo detalleArriendo : detallesArriendo) {
-                if (detalleArriendo.getEquipo() == null) {
-                    return 0;
-                }
-            }
-
-            for (DetalleArriendo detalleArriendo : detallesArriendo) {
-                total += detalleArriendo.getEquipo().getPrecioArriendoDia();
-            }
-            return total;
-
-        } else {
-            for (DetalleArriendo detalleArriendo : detallesArriendo) {
-                total += detalleArriendo.getEquipo().getPrecioArriendoDia();
-            }
-            return total;
-        }
-
-
     }
 
-
-    public String[][] getDetallesToString() {
+    public String[][] getDetallesToString () {
 
         String[][] arr = new String[detallesArriendo.size()][3];
 
@@ -127,11 +103,11 @@ public class Arriendo {
         return arr;
     }
 
-    public Cliente getCliente() {
+    public Cliente getCliente () {
         return cliente;
     }
 
-    public Equipo[] getEquipos() {
+    public Equipo[] getEquipos () {
         return detallesArriendo.toArray(new Equipo[0]);
 
     }
