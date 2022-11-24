@@ -30,20 +30,28 @@ public class ControladorArriendoEquipos {
     public void creaCliente(String rut, String nom, String dir, String tel) throws ClienteException {
 
         for (Cliente cliente : clientes) {
-            if (cliente.getRut().equals(rut)) {
-                throw new ClienteException("El cliente ya se encuentra registrado, intentelo nuevamente");
+            if (validarRut(rut)){
+                clientes.add(new Cliente(rut, nom, dir, tel));
+
+                   if(cliente.getRut().equals(rut)){
+                    throw new ClienteException("El cliente ya se encuentra registrado, intentelo nuevamente");
+                }
             }
         }
-        clientes.add(new Cliente(rut, nom, dir, tel));
     }
 
     public void creaEquipo(long codigo, String descripcion, long precioArriendoDia) throws EquipoException {
         for (Equipo equipo : equipos) {
+            if(validarCodigo(codigo)){
+                equipos.add(new Equipo(codigo, descripcion, precioArriendoDia));
+            }else{
+                System.out.println("Codigo erroneo");
+            }
             if (equipo.getCodigo() == codigo) {
                 throw new EquipoException("El equipo ingresado ya existe");
             }
         }
-        equipos.add(new Equipo(codigo, descripcion, precioArriendoDia));
+
     }
 
     public String[][] listaClientes() {
@@ -60,17 +68,21 @@ public class ControladorArriendoEquipos {
         return clientesArr;
     }
 
-    public String[][] listaEquipos() {
-        String[][] equiposArr = new String[equipos.size()][3];
-        int i = 0;
-        for (Equipo equipo : equipos) {
-            equiposArr[i][0] = Long.toString(equipo.getCodigo());
-            equiposArr[i][1] = equipo.getDescripcion();
-            equiposArr[i][2] = Long.toString(equipo.getPrecioArriendoDia());
-            equiposArr[i][3] = String.valueOf(equipo.getEstado());
-            i++;
+    public String[][] listaArriendosPorDevolver(String rutCliente) throws ClienteException {
+        Cliente cliente = buscaCliente(rutCliente);
+        if (cliente == null) {
+            throw new ClienteException("No existe un cliente con el rut dado");
+        } else {
+            Arriendo[] devolverCliente = cliente.getArriendosPorDevolver();
+            String[][] listaArrDevolver = new String[devolverCliente.length][8];
+            for (int i = 0; i < listaArrDevolver.length; i++) {
+                String[] listaArriendosPorDevolverX = consultaArriendo(cliente.getArriendosPorDevolver()[i].getCodigo());
+                for (int j = 0; j < listaArrDevolver[0].length; j++) {
+                    listaArrDevolver[i][j] = listaArriendosPorDevolverX[j];
+                }
+            }
+            return listaArrDevolver;
         }
-        return equiposArr;
     }
 
     public long creaArriendo(String rutCliente) throws ClienteException {
@@ -176,7 +188,6 @@ public class ControladorArriendoEquipos {
         }
 
     }
-
     public String[] consultaEquipo(long codigo) {
         String[] arreglo;
         Equipo equipo = buscaEquipo(codigo);
@@ -198,45 +209,89 @@ public class ControladorArriendoEquipos {
             if (equipo != null) {
                 arreglo = new String[]{String.valueOf(equipo.getCodigo()), equipo.getDescripcion(),
                         String.valueOf(equipo.getPrecioArriendoDia()), estado, estadoArriendo};
-            } else {
-                return arreglo = new String[0];
+                return arreglo;
             }
-            return arreglo;
         }
+        return arreglo = new String[0];
+    }
 
-        public String[] consultaCliente(String rut){
-            String[] arr;
-            String aux = null;
+    public String[] consultaCliente(String rut){
+        String[] arr;
+        Cliente cliente = buscaCliente(rut);
+
+        if(cliente==null){
+            arr = new String[0];
+            return arr;
+        }else{
+            arr = new String[6];
+            arr[0] = cliente.getRut();
+            arr[1] = cliente.getNombre();
+            arr[2] = cliente.getDireccion();
+            arr[3] = cliente.getTelefono();
+            if(cliente.isActivo()) {
+                arr[4] = "Activo";
+            }else {
+                arr[4] = "Inactivo";
+            }
+            arr[5] = String.valueOf(cliente.getArriendosPorDevolver().length);
+            return arr;
+        }
+    }
+    //aiuda
+    public String[][] listaArriendosPorDevoler (String rut) throws ClienteException {
+        if (buscaCliente(rut) != null) {
             Cliente cliente = buscaCliente(rut);
-            if (!cliente.isActivo()) {
-                aux = "Inactivo";
+            Arriendo[] arreglo = cliente.getArriendosPorDevolver();
+            for (int i = 0; i < arreglo.length; i++) {
+                (arreglo[i]) =;
             }
-            if (cliente.isActivo()) {
-                aux = "Activo";
-            }
-            if (cliente != null) {
-                arr = new String[]{cliente.getRut(), cliente.getNombre(), cliente.getDireccion(), cliente.getTelefono(), aux, String.valueOf(cliente.getArriendosPorDevolver().length)};
-                return arr;
-            }
-            return new String[0];
-
+        } else {
+            throw new ClienteException("No existe un cliente con el rut dado");
         }
-//aiuda
-        public String[][] listaArriendosPorDevoler (String rut) throws ClienteException {
-            if (buscaCliente(rut) != null) {
-                Cliente cliente = buscaCliente(rut);
-                Arriendo[] arreglo = cliente.getArriendosPorDevolver();
-                for (int i = 0; i < arreglo.length; i++) {
-                    (arreglo[i]) =;
-                }
+    }
+    private static boolean validarRut(String rut) {
+        boolean validacion = false;
+        try {
+            rut =  rut.toUpperCase();
+            rut = rut.replace(".", "");
+            rut = rut.replace("-", "");
+            int rutAux = Integer.parseInt(rut.substring(0, rut.length() - 1));
+
+            char dv = rut.charAt(rut.length() - 1);
+
+            int m = 0, s = 1;
+            for (; rutAux != 0; rutAux /= 10) {
+                s = (s + rutAux % 10 * (9 - m++ % 6)) % 11;
+            }
+            if (dv == (char) (s != 0 ? s + 47 : 75)) {
+                validacion = true;
+            }
+
+        } catch (java.lang.NumberFormatException e) {
+        } catch (Exception e) {
+        }
+        return validacion;
+    }
+    private boolean validarCodigo(long codigo) {
+        int longitud=String.valueOf(codigo).length();
+        try {
+            if (longitud != 15) {
+                System.out.println("Numero incorrecto, el número debe ser de 9 digitos\n");
+                return false;
             } else {
-                throw new ClienteException("No existe un cliente con el rut dado");
+                System.out.println("procesando...\n");
+                return true;
             }
+        } catch (UnsupportedOperationException e) {
+            System.out.println("Error!:" + e);
+
         }
-
-
+        return false;
     }
 }
+
+
+
 
 
 
