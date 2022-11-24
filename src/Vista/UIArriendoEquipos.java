@@ -4,6 +4,7 @@ import Controlador.ControladorArriendoEquipos;
 import Excepciones.ArriendoException;
 import Excepciones.ClienteException;
 import Excepciones.EquipoException;
+import Modelo.Arriendo;
 import Modelo.Cliente;
 
 import java.util.InputMismatchException;
@@ -244,8 +245,23 @@ public class UIArriendoEquipos {
     }
 
     public void arriendaEquipos() throws ClienteException, EquipoException, ArriendoException {
+
+
+
+    }
+
+    public void cambiaEstadoCliente() {
         System.out.println("Ingrese rut");
         String rut = teclado.next();
+        try {
+            if (ControladorArriendoEquipos.getInstance().consultaCliente(rut).length > 0) {
+                ControladorArriendoEquipos.getInstance().cambiaEstadoCliente(rut);
+                String nombre= ControladorArriendoEquipos.getInstance().consultaCliente(rut)[1];
+                System.out.println("\nCambiando el estado a un cliente...");
+                System.out.println("Rut cliente:"+rut);
+                System.out.println("Se ha cambiado exitosamente el estado del cliente"+ nombre+ "a"
+                        +ControladorArriendoEquipos.getInstance().consultaCliente(rut)[4]);
+            }
         //validacion rut
         boolean validacion = false;
         try {
@@ -254,15 +270,40 @@ public class UIArriendoEquipos {
             rut = rut.replace("-", "");
             int rutAux = Integer.parseInt(rut.substring(0, rut.length() - 1));
 
-            char dv = rut.charAt(rut.length() - 1);
+        } catch (ClienteException ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+    public void listaDetallesArriendo() {
 
-            int m = 0, s = 1;
-            for (; rutAux != 0; rutAux /= 10) {
-                s = (s + rutAux % 10 * (9 - m++ % 6)) % 11;
-            }
-            if (dv == (char) (s != 0 ? s + 47 : 75)) {
-                validacion = true;
-            }
+        System.out.print("Codigo arriendo: ");
+        long codigoArriendo = sc.nextLong();
+
+        String[] consultaArriendo = ControladorArriendoEquipos.getInstance().consultaArriendo(codigoArriendo);
+
+
+        if (consultaArriendo.length == 0) {
+            System.err.println("Arriendo no encontrado.");
+            return;
+        }
+        sc.nextLine();
+
+        String[][] listaDetallesArriendos = ControladorArriendoEquipos.getInstance().listaDetallesArriendos(codigoArriendo);
+
+        System.out.println("----------------------------------------------------");
+        System.out.print("Codigo:" + consultaArriendo[0]);
+        System.out.print("Fecha inicio:" + consultaArriendo[1]);
+        System.out.print("Fecha devolucion:" + consultaArriendo[2]);
+        System.out.print("Estado :" + consultaArriendo[3]);
+        System.out.print("Rut cliente:" + consultaArriendo[4]);
+        System.out.print("Nombre cleinte:" + consultaArriendo[5]);
+        System.out.print("Monto total:" + consultaArriendo[6]);
+        System.out.println("----------------------------------------------------");
+        System.out.println("                DETALLE DEL ARRIENDO                ");
+        System.out.println("----------------------------------------------------");
+        System.out.printf("%-15s %-25s %-25s%n", "Codigo Equipo", "Descripcion equipo", "Precio arriendo por dia");
+        for (String[] linea : listaDetallesArriendos) {
+            System.out.printf("%-15s %-25s %-25s%n", linea[0], linea[1], linea[2]);
 
         } catch (NumberFormatException e) {
             System.out.println("Error!: rut inválido" + e);
@@ -306,6 +347,7 @@ public class UIArriendoEquipos {
 
         } catch (ClienteException ex) {
             throw new RuntimeException(ex);
+
         }
     } catch(
     NumberFormatException e)
@@ -327,8 +369,9 @@ public class UIArriendoEquipos {
 
     }
 
-
+            }
 }
+
 
 
     }
