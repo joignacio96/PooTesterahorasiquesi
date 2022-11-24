@@ -30,47 +30,37 @@ public class ControladorArriendoEquipos {
     }
 
     public void creaCliente(String rut, String nom, String dir, String tel) throws ClienteException {
-
         for (Cliente cliente : clientes) {
-            if (validarRut(rut)){
-                clientes.add(new Cliente(rut, nom, dir, tel));
-
-                   if(cliente.getRut().equals(rut)){
-                    throw new ClienteException("Ya existe un cliente con el rut dado");
-                }
+            if(cliente.getRut().equals(rut)){
+                throw new ClienteException("Ya existe un cliente con el rut dado");
             }
         }
+        Cliente cliente = new Cliente(rut, nom, dir, tel);
+        clientes.add(cliente);
     }
 
     public void creaEquipo(long codigo, String descripcion, long precioArriendoDia) throws EquipoException {
         for (Equipo equipo : equipos) {
-            if(validarCodigo(codigo)){
-                equipos.add(new Equipo(codigo, descripcion, precioArriendoDia));
-            }else{
-                throw new EquipoException("Codigo no valido");
-            }
             if (equipo.getCodigo() == codigo) {
                 throw new EquipoException("Ya existe el equipo indicado");
             }
         }
+        Equipo equipo = new Equipo(codigo, descripcion, precioArriendoDia);
+        equipos.add(equipo);
     }
 
     public long creaArriendo(String rutCliente) throws ClienteException {
-        int i;
-        for (Cliente cliente : clientes) {
-            if (cliente.getRut().equalsIgnoreCase(rutCliente) && cliente.isActivo()) {
-                LocalDate ahora = LocalDate.now();
-                new Arriendo(clientes.indexOf(cliente), ahora, clientes.get(clientes.indexOf(cliente)));
-
-                return clientes.indexOf(cliente);
-            }
+        Cliente cliente = buscaCliente(rutCliente);
+        if (cliente == null) {
+            throw new ClienteException("fmdsjkjlfjsl");
         }
-        if (!clientes.contains(rutCliente)) {
-            throw new ClienteException("No existe un cliente con el rut dado");
-        } else {
-            throw new ClienteException("El cliente está inactivo");
+        if (!cliente.isActivo()) {
+            throw new ClienteException("fjdsklfjdskl");
         }
-
+        int codArriendo = arriendos.size();
+        Arriendo arriendo = new Arriendo(codArriendo, LocalDate.now(), cliente);
+        arriendos.add(arriendo);
+        return codArriendo;
     }
 
     private Equipo buscaEquipo(long codigo) {
@@ -101,46 +91,39 @@ public class ControladorArriendoEquipos {
     }
 
     public String agregaEquipoToArriendo(long codArriendo, long codEquipo) throws ArriendoException, EquipoException {
-        if (buscaArriendo(codArriendo) != null) {
-            if (buscaArriendo(codArriendo).getEstado().equals(EstadoArriendo.INICIADO)) {
-                if (buscaEquipo(codEquipo) != null) {
-                    if (!buscaEquipo(codEquipo).isArrendado()) {
-                        if (buscaEquipo(codEquipo).getEstado().equals(EstadoEquipo.OPERATIVO)) {
-                            buscaArriendo(codArriendo).addDetalleArriendo(buscaEquipo(codEquipo));
-                        } else {
-                            throw new EquipoException("El equipo no esta operativo");
-                        }
-                    } else {
-                        throw new EquipoException("El equipo se encuentra arrendado");
-                    }
-                } else {
-                    throw new EquipoException("No existe un equipo con el codigo dado");
-                }
-            } else {
-                throw new ArriendoException("El arriendo no está iniciado");
-            }
-
-        } else {
-            throw new ArriendoException("No existe un Arriendo con el codigo dado");
+        Arriendo arriendo = buscaArriendo(codArriendo);
+        if (arriendo == null) {
+            throw new ArriendoException("alho");
+        }
+        if (arriendo.getEstado() != EstadoArriendo.INICIADO) {
+            throw new ArriendoException("fjkldslf");
         }
 
-        return buscaEquipo(codEquipo).getDescripcion();
+        Equipo equipo = buscaEquipo(codEquipo);
+        if (equipo == null) {
+            throw new EquipoException("fjkdlslf");
+        }
+        if (equipo.getEstado() != EstadoEquipo.OPERATIVO) {
+            throw new EquipoException("fjdskkfjl");
+        } else if (equipo.isArrendado()) {
+            throw new EquipoException("dfjklsfjkldsfjl");
+        }
 
-
+        arriendo.addDetalleArriendo(equipo);
+        return equipo.getDescripcion();
     }
 
     //aiuda
     public long cierraArriendo(long codArriendo) throws ArriendoException {
         Arriendo arriendo = buscaArriendo(codArriendo);
-        if (arriendo != null) {
-            if (arriendo.getEquipos() != null) {
-                arriendo.setEstado(EstadoArriendo.ENTREGADO);
-            } else {
-                throw new ArriendoException("No existen equipos asociados al arriendo");
-            }
-        } else {
-            throw new ArriendoException("No existe un arriendo con el codigo dado");
+        if (arriendo == null) {
+            throw new ArriendoException("jfkldskljf");
         }
+        if (arriendo.getEquipos().length == 0) {
+            throw new ArriendoException("kfldsjklfjdslk");
+        }
+
+        arriendo.setEstado(EstadoArriendo.ENTREGADO);
         return arriendo.getMontoTotal();
     }
 
@@ -276,94 +259,73 @@ public class ControladorArriendoEquipos {
         return false;
     }
     public String[][] listaClientes() {
+        if (clientes.size() == 0) {
+            return new String[0][0];
+        }
 
         String[][] arrClientes = new String[clientes.size()][6];
 
         int i = 0;
-        int j = 0;
+        for (Cliente cliente : clientes) {
 
+            arrClientes[i][0] = cliente.getRut();
+            arrClientes[i][1] = cliente.getNombre();
+            arrClientes[i][2] = cliente.getDireccion();
+            arrClientes[i][3] = cliente.getTelefono();
 
-        if (clientes.size() > 0) {
-            for (Cliente cliente : clientes) {
-
-                arrClientes[i][j] = cliente.getRut();
-                j++;
-                arrClientes[i][j] = cliente.getNombre();
-                j++;
-                arrClientes[i][j] = cliente.getDireccion();
-                j++;
-                arrClientes[i][j] = cliente.getTelefono();
-                j++;
-
-                if (cliente.isActivo() == true) {
-                    arrClientes[i][j] = "Activo";
-                    j++;
-                }
-
-                if (cliente.isActivo() == false) {
-                    arrClientes[i][j] = "Inactivo";
-                    j++;
-                }
-
-                arrClientes[i][j] = String.valueOf(cliente.getArriendosPorDevolver().length);
-
-                j = 0;
-                i++;
+            if (cliente.isActivo()) {
+                arrClientes[i][4] = "Activo";
+            } else {
+                arrClientes[i][4] = "Inactivo";
             }
-            return arrClientes;
-        } else {
-            return new String[0][0];
+
+            arrClientes[i][5] = String.valueOf(cliente.getArriendosPorDevolver().length);
+
+            i++;
         }
+        return arrClientes;
 
     }
 
     public String[][] listaEquipos() {
-
+        if (equipos.isEmpty()) {
+            return new String[0][0];
+        }
         String[][] arrEquipos = new String[equipos.size()][5];
 
         int i = 0;
-        int j = 0;
 
-        if (equipos.size() > 0) {
-            for (Equipo equipo : equipos) {
-
-                String estadoEquipo = null;
-                if (equipo.getEstado().equals(EstadoEquipo.DADO_DE_BAJA)) {
-                    estadoEquipo = "Dado de baja";
+        for (Equipo equipo : equipos) {
+            String estado = "";
+            switch (equipo.getEstado()) {
+                case DADO_DE_BAJA -> {
+                    estado = "Dado de baja";
                 }
-                if (equipo.getEstado().equals(EstadoEquipo.EN_REPARACION)) {
-                    estadoEquipo = "En reparación";
+                case EN_REPARACION -> {
+                    estado = "En reparacion";
                 }
-                if (equipo.getEstado().equals(EstadoEquipo.OPERATIVO)) {
-                    estadoEquipo = "Operativo";
+                case OPERATIVO -> {
+                    estado = "Operativo";
                 }
-
-                String situacion = null;
-                if (equipo.isArrendado() == true) {
-                    situacion = "Arrendado";
-                }
-                if (equipo.isArrendado() == false) {
-                    situacion = "Disponible";
-                }
-
-                arrEquipos[i][j] = String.valueOf(equipo.getCodigo());
-                j++;
-                arrEquipos[i][j] = equipo.getDescripcion();
-                j++;
-                arrEquipos[i][j] = String.valueOf(equipo.getPrecioArriendoDia());
-                j++;
-                arrEquipos[i][j] = estadoEquipo;
-                j++;
-                arrEquipos[i][j] = situacion;
-                j = 0;
-                i++;
             }
-            return arrEquipos;
-        } else {
-            return new String[0][0];
-        }
 
+            String situacion;
+            if (equipo.isArrendado()) {
+                situacion = "Arrendado";
+            } else {
+                situacion = "Disponible";
+            }
+
+            arrEquipos[i][0] = String.valueOf(equipo.getCodigo());
+            arrEquipos[i][1] = equipo.getDescripcion();
+            arrEquipos[i][2] = String.valueOf(equipo.getPrecioArriendoDia());
+            arrEquipos[i][3] = estado;
+            arrEquipos[i][4] = situacion;
+            i++;
+        }
+        return arrEquipos;
     }
+
     public String[][] listaDetallesArriendos(long codArriendo) {
         String[][] out = null;
 
@@ -378,6 +340,7 @@ public class ControladorArriendoEquipos {
 
             }
         }
+        return new String[0][0];
     }
 
     public String[][] listaArriendo(LocalDate inicio, LocalDate fin) {

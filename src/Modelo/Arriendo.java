@@ -11,14 +11,14 @@ public class Arriendo {
     private LocalDate fechaDevolucion;
     private EstadoArriendo estado;
     private Cliente cliente;
-    private ArrayList<DetalleArriendo> detallesArriendo = new ArrayList<>();
+    private ArrayList<DetalleArriendo> detallesArriendo;
 
     public Arriendo(long codigo, LocalDate fechaInicio, Cliente cliente) {
         this.codigo = codigo;
-        this.fechaInicio = fechaInicio;
         this.cliente = cliente;
-        estado = EstadoArriendo.INICIADO;
-
+        this.estado = EstadoArriendo.INICIADO;
+        this.detallesArriendo = new ArrayList<>();
+        cliente.addArriendo(this);
     }
 
     public long getCodigo() {
@@ -48,7 +48,6 @@ public class Arriendo {
     public void addDetalleArriendo(Equipo equipo) {
         DetalleArriendo detalle = new DetalleArriendo(equipo.getPrecioArriendoDia(), equipo, this);
         detallesArriendo.add(detalle);
-        equipo.addDetalleArriendo(detalle);
     }
 
     public int getNumeroDiasArriendo() {
@@ -76,6 +75,7 @@ public class Arriendo {
             }
             return total;
         }
+        return 0;
 
     }
 
@@ -108,7 +108,10 @@ public class Arriendo {
     }
 
     public Equipo[] getEquipos () {
-        return detallesArriendo.toArray(new Equipo[0]);
-
+        ArrayList<Equipo> equipos = new ArrayList<>();
+        for (DetalleArriendo detalleArriendo: detallesArriendo) {
+            equipos.add(detalleArriendo.getEquipo());
+        }
+        return equipos.toArray(new Equipo[0]);
     }
 }

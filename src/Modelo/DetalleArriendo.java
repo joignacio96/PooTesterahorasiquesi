@@ -11,6 +11,7 @@ public class DetalleArriendo {
         this.precioAplicado = precioAplicado;
         this.equipo = equipo;
         this.arriendo = arriendo;
+        equipo.addDetalleArriendo(this);
     }
 
     public long getPrecioAplicado() {

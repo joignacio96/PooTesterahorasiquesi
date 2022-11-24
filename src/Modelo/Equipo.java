@@ -15,6 +15,7 @@ public class Equipo {
         this.descripcion = descripcion;
         this.precioArriendoDia = precioArriendoDia;
         this.estado = EstadoEquipo.OPERATIVO;
+        this.detalles = new ArrayList<>();
     }
 
     public long getCodigo() {
@@ -37,8 +38,7 @@ public class Equipo {
         this.estado = estado;
     }
     public void addDetalleArriendo (DetalleArriendo detalle){
-        ArrayList<DetalleArriendo>arriendo=new ArrayList<>();
-        arriendo.add(detalle);
+        detalles.add(detalle);
     }
 
     public boolean isArrendado(){
@@ -46,8 +46,7 @@ public class Equipo {
             return false;
         }
         int i=(detalles.size()-1);
-        //xq no me pesca el get estado?
-        return detalles.get(i).getArriendo().getEstado().equals((EstadoArriendo.ENTREGADO));
+        return detalles.get(i).getArriendo().getEstado() == (EstadoArriendo.ENTREGADO);
     }
 }
 

@@ -53,15 +53,16 @@ if (activo){
             arriendos.add(arriendo);
         } else System.out.println("No existe el arriendo");
     }
+
     public Arriendo[] getArriendosPorDevolver(){
-        Arriendo[]arriendoDevolver=new Arriendo[arriendos.size()];
+        ArrayList<Arriendo> arriendoPorDevoelr = new ArrayList<>();
         for (Arriendo arriendo:arriendos) {
             if(arriendo.getEstado().equals(EstadoArriendo.ENTREGADO)){
-                arriendoDevolver[arriendos.size()]=arriendo;
+                arriendoPorDevoelr.add(arriendo);
             }
 
         }
-        return arriendoDevolver;
+        return arriendoPorDevoelr.toArray(new Arriendo[0]);
     }
 
 
