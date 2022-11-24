@@ -43,9 +43,11 @@ public class Arriendo {
     public void setEstado(EstadoArriendo estado) {
         this.estado = estado;
     }
-    //De aqui para abajo hay que trabajar en los metodos
-    public void addDetalleArriendo(Equipo equipo){
-        detallesArriendo.add(equipo);
+
+    public void addDetalleArriendo(Equipo equipo) {
+        DetalleArriendo detalle = new DetalleArriendo(equipo.getPrecioArriendoDia(), equipo,this);
+        detalleArriendo.add(detalle);
+        equipo.addDetalleArriendo(detalle);
     }
 
     public int getNumeroDiasArriendo(){
@@ -62,31 +64,65 @@ if (estado ==EstadoArriendo.DEVUELTO) {
     return 0;
 }
 }
-    public long getMontoTotal(){
 
-        if (estado==EstadoArriendo.DEVUELTO){
-            int totPagar;
-            totPagar=(getNumeroDiasArriendo()* (int) detallesArriendo.getPrecioAplicado());
-            return totPagar;
+    public long getMontoTotal() {
+
+        long total = 0;
+
+        if (estado.equals(EstadoArriendo.DEVUELTO)) {
+
+            for (DetalleArriendo detalleArriendo : detallesArriendo) {
+                total += getNumeroDiasArriendo() * detalleArriendo.getEquipo().getPrecioArriendoDia();
+            }
+            return total;
         }
-if (estado==EstadoArriendo.ENTREGADO){
-    return detallesArriendo.getPrecioAplicado();
-}
-else{
-    return 0;
-}
+
+        if (estado.equals(EstadoArriendo.INICIADO)) {
+
+            for (DetalleArriendo detalleArriendo : detallesArriendo) {
+                if (detalleArriendo.getEquipo() == null) {
+                    return 0;
+                }
+            }
+
+            for (DetalleArriendo detalleArriendo : detallesArriendo) {
+                total += detalleArriendo.getEquipo().getPrecioArriendoDia();
+            }
+            return total;
+
+        } else {
+            for (DetalleArriendo detalleArriendo : detallesArriendo) {
+                total += detalleArriendo.getEquipo().getPrecioArriendoDia();
+            }
+            return total;
+        }
+
+
     }
-    public String[][] getDetallesToString(){
-        if (estado==EstadoArriendo.INICIADO) {
-            String [][] arregloVacio= {};
-        return arregloVacio;
-        }
-        else{
-            String [][] arregloDetalles= new String[][3];
-           return String [][]  //matriz con codigo, descripcion y precio de los equipos incluidos en el arriendo.
 
+
+    public String[][] getDetallesToString() {
+
+        String[][] arr = new String[detallesArriendo.size()][3];
+
+        if (estado == EstadoArriendo.INICIADO && detallesArriendo == null) {
+            return new String[0][0];
         }
 
+        if (estado == EstadoArriendo.ENTREGADO || estado == EstadoArriendo.DEVUELTO) {
+
+            int i = 0;
+            int j = 0;
+            for (DetalleArriendo detalleArriendo : detallesArriendo) {
+                arr[i][j] = String.valueOf(detalleArriendo.getEquipo().getCodigo());
+                j++;
+                arr[i][j] = detalleArriendo.getEquipo().getDescripcion();
+                j++;
+                arr[i][j] = String.valueOf(detalleArriendo.getEquipo().getPrecioArriendoDia());
+            }
+        }
+
+        return arr;
     }
     public Cliente getCliente(){
         return cliente;

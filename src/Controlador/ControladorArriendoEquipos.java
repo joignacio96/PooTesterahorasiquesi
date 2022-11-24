@@ -5,6 +5,7 @@ import Excepciones.ClienteException;
 import Excepciones.EquipoException;
 import Modelo.*;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -34,7 +35,7 @@ public class ControladorArriendoEquipos {
                 clientes.add(new Cliente(rut, nom, dir, tel));
 
                    if(cliente.getRut().equals(rut)){
-                    throw new ClienteException("El cliente ya se encuentra registrado, intentelo nuevamente");
+                    throw new ClienteException("Ya existe un cliente con el rut dado");
                 }
             }
         }
@@ -48,24 +49,10 @@ public class ControladorArriendoEquipos {
                 System.out.println("Codigo erroneo");
             }
             if (equipo.getCodigo() == codigo) {
-                throw new EquipoException("El equipo ingresado ya existe");
+                throw new EquipoException("Ya existe el equipo indicado");
             }
         }
 
-    }
-
-    public String[][] listaClientes() {
-        String[][] clientesArr = new String[clientes.size()][5];
-        int i = 0;
-        for (Cliente cliente : clientes) {
-            clientesArr[i][0] = clientes.get(i).getRut();
-            clientesArr[i][1] = clientes.get(i).getNombre();
-            clientesArr[i][2] = clientes.get(i).getDireccion();
-            clientesArr[i][3] = clientes.get(i).getTelefono();
-            clientesArr[i][4] = String.valueOf(clientes.get(i).isActivo());
-            i++;
-        }
-        return clientesArr;
     }
 
     public String[][] listaArriendosPorDevolver(String rutCliente) throws ClienteException {
@@ -287,6 +274,112 @@ public class ControladorArriendoEquipos {
 
         }
         return false;
+    }
+    public String[][] listaClientes() {
+
+        String[][] arrClientes = new String[clientes.size()][6];
+
+        int i = 0;
+        int j = 0;
+
+
+        if (clientes.size() > 0) {
+            for (Cliente cliente : clientes) {
+
+                arrClientes[i][j] = cliente.getRut();
+                j++;
+                arrClientes[i][j] = cliente.getNombre();
+                j++;
+                arrClientes[i][j] = cliente.getDireccion();
+                j++;
+                arrClientes[i][j] = cliente.getTelefono();
+                j++;
+
+                if (cliente.isActivo() == true) {
+                    arrClientes[i][j] = "Activo";
+                    j++;
+                }
+
+                if (cliente.isActivo() == false) {
+                    arrClientes[i][j] = "Inactivo";
+                    j++;
+                }
+
+                arrClientes[i][j] = String.valueOf(cliente.getArriendosPorDevolver().length);
+
+                j = 0;
+                i++;
+            }
+            return arrClientes;
+        } else {
+            return new String[0][0];
+        }
+
+    }
+
+    public String[][] listaEquipos() {
+
+        String[][] arrEquipos = new String[equipos.size()][5];
+
+        int i = 0;
+        int j = 0;
+
+        if (equipos.size() > 0) {
+            for (Equipo equipo : equipos) {
+
+                String estadoEquipo = null;
+                if (equipo.getEstado().equals(EstadoEquipo.DADO_DE_BAJA)) {
+                    estadoEquipo = "Dado de baja";
+                }
+                if (equipo.getEstado().equals(EstadoEquipo.EN_REPARACION)) {
+                    estadoEquipo = "En reparación";
+                }
+                if (equipo.getEstado().equals(EstadoEquipo.OPERATIVO)) {
+                    estadoEquipo = "Operativo";
+                }
+
+                String situacion = null;
+                if (equipo.isArrendado() == true) {
+                    situacion = "Arrendado";
+                }
+                if (equipo.isArrendado() == false) {
+                    situacion = "Disponible";
+                }
+
+                arrEquipos[i][j] = String.valueOf(equipo.getCodigo());
+                j++;
+                arrEquipos[i][j] = equipo.getDescripcion();
+                j++;
+                arrEquipos[i][j] = String.valueOf(equipo.getPrecioArriendoDia());
+                j++;
+                arrEquipos[i][j] = estadoEquipo;
+                j++;
+                arrEquipos[i][j] = situacion;
+                j = 0;
+                i++;
+            }
+            return arrEquipos;
+        } else {
+            return new String[0][0];
+        }
+
+    }
+    public String[][] listaDetallesArriendos(long codArriendo) {
+        String[][] out = null;
+
+        for (Arriendo arriendo : arriendos) {
+
+            if (arriendo.getCodigo() == codArriendo) {
+
+                out = arriendo.getDetallesToString();
+
+            } else {
+                return new String[0][0];
+            }
+        }
+
+        return out;
+
     }
 }
 

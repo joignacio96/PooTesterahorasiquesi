@@ -4,8 +4,10 @@ import Controlador.ControladorArriendoEquipos;
 import Excepciones.ArriendoException;
 import Excepciones.ClienteException;
 import Excepciones.EquipoException;
+import Modelo.Arriendo;
 import Modelo.Cliente;
 
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class UIArriendoEquipos {
@@ -23,28 +25,44 @@ public class UIArriendoEquipos {
     }
 
     public void menu() {
-        int opcion;
+        int opcion=0;
         System.out.println("******* SISTEMA DE ARRIENDO DE EQUIPOS DE NIEVE ****** ");
         do {
             System.out.println("\n\n\n***MENU DE OPCIONES***");
             System.out.println("1. Crea un nuevo cliente");
             System.out.println("2. Crea un nuevo equipo");
-            System.out.println("3. Lista todos los clientes");
-            System.out.println("4. Lista todos los equipos");
-            System.out.println("5. Salir");
+            System.out.println("3. Arrienda equipos");
+            System.out.println("4. Devuelve equipos");
+            System.out.println("5. Cambia estado de un cliente");
+            System.out.println("6. Lista de todos los clientes");
+            System.out.println("7. Lista de todos los equipos");
+            System.out.println("8. Lista todos los arriendos");
+            System.out.println("9. Lista detalles de un arriendo");
+            System.out.println("10. Salir");
             System.out.println("\n\n\nIngrese opcion: ");
-            opcion = teclado.nextInt();
+
+            try{
+                opcion = teclado.nextInt();
+                System.out.println("");
+            }catch (InputMismatchException e){
+                System.out.println("\nError: ");
+            }
+
 
             switch (opcion) {
                 case 1 -> creaCliente();
                 case 2 -> creaEquipo();
-                case 3 -> listaClientes();
-                case 4 -> listaEquipos();
-                case 5 -> {
-                }
+                case 3 -> arriendaEquipos();
+                case 4 -> devuelveEquipos();
+                case 5 -> cambiaEstadoCliente();
+                case 6 -> listaClientes();
+                case 7 -> listaEquipos();
+                case 8 -> listaArriendos();
+                case 9 -> listaDetallesArriendo();
+                case 10 -> System.exit(2);
                 default -> System.out.println("\nIngreso no valido");
             }
-        } while (opcion != 5);
+        } while (opcion != 10);
         teclado.close();
     }
 
@@ -161,53 +179,7 @@ public class UIArriendoEquipos {
     }
 
     public void arriendaEquipos() throws ClienteException, EquipoException, ArriendoException {
-        System.out.println("Ingrese rut");
-        String rut = teclado.next();
-        //validacion rut
-        boolean validacion = false;
-        try {
-            rut = rut.toUpperCase();
-            rut = rut.replace(".", "");
-            rut = rut.replace("-", "");
-            int rutAux = Integer.parseInt(rut.substring(0, rut.length() - 1));
 
-            char dv = rut.charAt(rut.length() - 1);
-
-            int m = 0, s = 1;
-            for (; rutAux != 0; rutAux /= 10) {
-                s = (s + rutAux % 10 * (9 - m++ % 6)) % 11;
-            }
-            if (dv == (char) (s != 0 ? s + 47 : 75)) {
-                validacion = true;
-            }
-
-        } catch (NumberFormatException e) {
-            System.out.println("Error!: rut inválido" + e);
-        } catch (Exception e) {
-            System.out.println("Error!: rut inválido" + e);
-        }
-        //fin validacion
-        if (validacion == true) {
-            //validar si existe cliente
-            if (ControladorArriendoEquipos.getInstance().consultaCliente(rut).length > 0) {
-
-            }
-            String nombreCliente;
-            nombreCliente = datos[2];
-            long codigo = ControladorArriendoEquipos.getInstance().creaArriendo(rut);
-            do {
-                System.out.println("Ingrese el codigo del equipo, si desea terminar, ingrese 0");
-                long codigoEquipo = teclado.nextLong();
-                if ()
-                    //validacion long
-
-                    //fin validacion
-                    System.out.println("Agregando equipo al arriendo...");
-                ControladorArriendoEquipos.getInstance().agregaEquipoToArriendo(codigo, codigoEquipo);
-                ControladorArriendoEquipos.getInstance().consultaEquipo();
-
-            } while (codigoEquipo != 0);
-        }
 
 
     }
@@ -218,35 +190,47 @@ public class UIArriendoEquipos {
         try {
             if (ControladorArriendoEquipos.getInstance().consultaCliente(rut).length > 0) {
                 ControladorArriendoEquipos.getInstance().cambiaEstadoCliente(rut);
+                String nombre= ControladorArriendoEquipos.getInstance().consultaCliente(rut)[1];
+                System.out.println("\nCambiando el estado a un cliente...");
+                System.out.println("Rut cliente:"+rut);
+                System.out.println("Se ha cambiado exitosamente el estado del cliente"+ nombre+ "a"
+                        +ControladorArriendoEquipos.getInstance().consultaCliente(rut)[4]);
             }
 
         } catch (ClienteException ex) {
-            throw new RuntimeException(ex);
+            System.out.println(ex.getMessage());
         }
-    } catch(
-    NumberFormatException e)
-
-    {
-        System.out.println("Error!: rut inválido" + e);
-    } catch(
-    Exception e)
-
-    {
-        System.out.println("Error!: rut inválido" + e);
     }
-        if(validacion=true)
+    public void listaDetallesArriendo() {
 
-    {
-        //validar si existe cliente
-        String[] datos;
-        datos = ControladorArriendoEquipos.getInstance().consultaCliente(rut);
+        System.out.print("Codigo arriendo: ");
+        long codigoArriendo = sc.nextLong();
 
-    }
+        String[] consultaArriendo = ControladorArriendoEquipos.getInstance().consultaArriendo(codigoArriendo);
 
+        if (consultaArriendo.length == 0) {
+            System.err.println("Arriendo no encontrado.");
+            return;
+        }
+        sc.nextLine();
 
-}
+        String[][] listaDetallesArriendos = ControladorArriendoEquipos.getInstance().listaDetallesArriendos(codigoArriendo);
 
-
+        System.out.println("----------------------------------------------------");
+        System.out.print("Codigo:" + consultaArriendo[0]);
+        System.out.print("Fecha inicio:" + consultaArriendo[1]);
+        System.out.print("Fecha devolucion:" + consultaArriendo[2]);
+        System.out.print("Estado :" + consultaArriendo[3]);
+        System.out.print("Rut cliente:" + consultaArriendo[4]);
+        System.out.print("Nombre cleinte:" + consultaArriendo[5]);
+        System.out.print("Monto total:" + consultaArriendo[6]);
+        System.out.println("----------------------------------------------------");
+        System.out.println("                DETALLE DEL ARRIENDO                ");
+        System.out.println("----------------------------------------------------");
+        System.out.printf("%-15s %-25s %-25s%n", "Codigo Equipo", "Descripcion equipo", "Precio arriendo por dia");
+        for (String[] linea : listaDetallesArriendos) {
+            System.out.printf("%-15s %-25s %-25s%n", linea[0], linea[1], linea[2]);
+        }
     }
 
             }
