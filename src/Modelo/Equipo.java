@@ -1,13 +1,14 @@
 package Modelo;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class Equipo {
     private long codigo;
     private String descripcion;
     private long precioArriendoDia;
     private EstadoEquipo estado;
-    private ArrayList <DetalleArriendo> detalle;
+    private ArrayList <DetalleArriendo> detalles;
 
     public Equipo(long codigo, String descripcion, long precioArriendoDia) {
         this.codigo = codigo;
@@ -39,11 +40,14 @@ public class Equipo {
 ArrayList<DetalleArriendo>arriendo=new ArrayList<>();
 arriendo.add(detalle);
     }
+
     public boolean isArrendado(){
-        if (//ver si el equipo se encuentra arrendado){
-
-
+        if(detalles.isEmpty()){
+            return false;
         }
+        int i=(detalles.size()-1);
+        //xq no me pesca el get estado?
+        return detalles.get(i).getArriendo().getEstado().equals((EstadoArriendo.ENTREGADO));
     }
 }
 

@@ -1,6 +1,7 @@
 package Modelo;
 
 import java.time.Period;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class Arriendo {
@@ -9,7 +10,7 @@ public class Arriendo {
     private Date fechaDevolucion;
     private EstadoArriendo estado;
     private Cliente cliente;
-    private DetalleArriendo detalleArriendo;
+    private ArrayList <DetalleArriendo> detallesArriendo= new ArrayList<>();
 
     public Arriendo(long codigo, Date fechaInicio, Cliente cliente) {
         this.codigo = codigo;
@@ -44,7 +45,7 @@ public class Arriendo {
     }
     //De aqui para abajo hay que trabajar en los metodos
     public void addDetalleArriendo(Equipo equipo){
-        Arriendo DetalleArriendo=new Arriendo();
+        detallesArriendo.add(equipo);
     }
 
     public int getNumeroDiasArriendo(){
@@ -65,11 +66,11 @@ if (estado ==EstadoArriendo.DEVUELTO) {
 
         if (estado==EstadoArriendo.DEVUELTO){
             int totPagar;
-            totPagar=(getNumeroDiasArriendo()* (int) detalleArriendo.getPrecioAplicado());
+            totPagar=(getNumeroDiasArriendo()* (int) detallesArriendo.getPrecioAplicado());
             return totPagar;
         }
 if (estado==EstadoArriendo.ENTREGADO){
-    return detalleArriendo.getPrecioAplicado();
+    return detallesArriendo.getPrecioAplicado();
 }
 else{
     return 0;
@@ -91,7 +92,7 @@ else{
         return cliente;
     }
     public Equipo [] getEquipos(){
-        return d
+        return detallesArriendo.toArray(new Equipo[0]);
 
     }
 }

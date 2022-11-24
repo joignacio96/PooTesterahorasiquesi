@@ -36,7 +36,7 @@ public class Cliente {
         return telefono;
     }
     public boolean isActivo(){
-if (activo=true){
+if (activo){
     return true;
 }else{
     return false;
@@ -48,6 +48,22 @@ if (activo=true){
     public void setInactivo(){
         activo=false;
     }
+    public void addArriendo(Arriendo arriendo){
+        if(arriendo!=null){
+            arriendos.add(arriendo);
+        } else System.out.println("No existe el arriendo");
+    }
+    public Arriendo[] getArriendosPorDevolver(){
+        Arriendo[]arriendoDevolver=new Arriendo[arriendos.size()];
+        for (Arriendo arriendo:arriendos) {
+            if(arriendo.getEstado().equals(EstadoArriendo.ENTREGADO)){
+                arriendoDevolver[arriendos.size()]=arriendo;
+            }
+
+        }
+        return arriendoDevolver;
+    }
+
 
     @Override
     public String toString() {

@@ -1,6 +1,10 @@
 package Vista;
 
 import Controlador.ControladorArriendoEquipos;
+import Excepciones.ArriendoException;
+import Excepciones.ClienteException;
+import Excepciones.EquipoException;
+
 import java.util.Scanner;
 
 public class UIArriendoEquipos {
@@ -74,26 +78,134 @@ public class UIArriendoEquipos {
         String rut,nom, dir, tel;
         System.out.println("Creando un nuevo cliente...");
         System.out.print("\nRut: ");
-        rut = teclado.next();
+        rut = teclado.next().trim();
+        if(rut.isBlank()||rut.isEmpty()){
+            System.out.println("No ha ingresado ningún dato, por favor inténtelo de nuevo");
+            return;
+        }
         System.out.print("Nombre: ");
-        nom = teclado.next();
+        nom = teclado.next().trim();
+        if(nom.isBlank()||nom.isEmpty()){
+            System.out.println("No ha ingresado ningún dato, por favor inténtelo de nuevo");
+            return;
+        }
         System.out.print("Domicilio: ");
-        dir = teclado.next();
+        dir = teclado.next().trim();
+        if(dir.isBlank()||dir.isEmpty()){
+            System.out.println("No ha ingresado ningún dato, por favor inténtelo de nuevo");
+            return;
+        }
         System.out.println("Telefono: ");
-        tel=teclado.next();
-        ControladorArriendoEquipos.getInstance().creaCliente(rut,nom,dir,tel);
+        tel=teclado.next().trim();
+        if(tel.isBlank()||tel.isEmpty()){
+            System.out.println("No ha ingresado ningún dato, por favor inténtelo de nuevo");
+            return;
+        }
+        try {
+            ControladorArriendoEquipos.getInstance().creaCliente(rut, nom, dir, tel);
+            System.out.println("Usted ha creado satisfactoriamente el cliente");
+        }catch (ClienteException e){
+            System.out.println("Error creando el cliente, revise los datos nuevamente");
+        }
     }
     private void creaEquipo() {
-        String descripcion;
-        long codigo, precioArriendoDia;
+        String descripcion, code, precio;
+        long codigo =0, precioArriendoDia =0;
         System.out.print("Creando un nuevo equipo... ");
         System.out.println("\n\n\nCodigo: ");
-        codigo= teclado.nextLong();
+        code= teclado.next().trim();
+
+        if(code.isBlank()||code.isEmpty()){
+            System.out.println("No ha ingresado ningún dato, por favor inténtelo de nuevo");
+            return;
+        }try{
+            codigo=Long.parseLong(code);
+        }catch(NumberFormatException e){
+            System.out.println("Por favor ingrese solo numeros");
+        }
         System.out.print("Descripcion: ");
-        descripcion = teclado.next();
+        descripcion = teclado.next().trim();
+        if(descripcion.isBlank()||descripcion.isEmpty()){
+            System.out.println("No ha ingresado ningún dato, por favor inténtelo de nuevo");
+            return;
+        }
         System.out.print("Precio arriendo por dia: ");
-        precioArriendoDia = teclado.nextLong();
-        ControladorArriendoEquipos.getInstance().creaEquipo(codigo,descripcion,precioArriendoDia);
+        precio = teclado.next().trim();
+        if(precio.isBlank()||precio.isEmpty()){
+            System.out.println("No ha ingresado ningún dato, por favor inténtelo de nuevo");
+            return;
+        }try{
+            precioArriendoDia=Long.parseLong(precio);
+            if(precioArriendoDia<0){
+                System.out.println("Por favor ingrese un precio válido");
+                return;
+            }
+        }catch (NumberFormatException e){
+            System.out.println("Por favor ingrese solo numeros");
+        }
+
+        try {
+            ControladorArriendoEquipos.getInstance().creaEquipo(codigo, descripcion, precioArriendoDia);
+        }catch(EquipoException e){
+            System.out.println("Error creando el equipo, intentelo de nuevo");
+        }
     }
+    public void arriendaEquipos() throws ClienteException, EquipoException, ArriendoException {
+        System.out.println("Ingrese rut");
+        String rut=teclado.next();
+        //validacion rut
+        boolean validacion = false;
+        try {
+            rut =  rut.toUpperCase();
+            rut = rut.replace(".", "");
+            rut = rut.replace("-", "");
+            int rutAux = Integer.parseInt(rut.substring(0, rut.length() - 1));
+
+            char dv = rut.charAt(rut.length() - 1);
+
+            int m = 0, s = 1;
+            for (; rutAux != 0; rutAux /= 10) {
+                s = (s + rutAux % 10 * (9 - m++ % 6)) % 11;
+            }
+            if (dv == (char) (s != 0 ? s + 47 : 75)) {
+                validacion = true;
+            }
+
+        } catch(NumberFormatException e) {
+            System.out.println("Error!: rut inválido"+e);
+        } catch (Exception e) {
+            System.out.println("Error!: rut inválido"+e);
+        }
+        //fin validacion
+        if (validacion=true){
+            String datos []= ControladorArriendoEquipos.getInstance().consultaCliente(rut);
+            String nombreCliente;
+            nombreCliente=datos[2];
+            long codigo= ControladorArriendoEquipos.getInstance().creaArriendo(rut);
+            do{
+                System.out.println("Ingrese el codigo del equipo, si desea terminar, ingrese 0");
+                long codigoEquipo=teclado.nextLong();
+                int longitud=String.valueOf(codigoEquipo).length();
+                //validacion long
+                try{
+                    if(longitud!=15){
+                        System.out.println("Numero incorrecto, el número debe ser de 9 digitos\n");
+                    }
+                    else{
+                        System.out.println("procesando...\n");
+                    }
+                }catch(UnsupportedOperationException e){
+                    System.out.println("Error!:"+e);
+
+                }
+                //fin validacion
+                System.out.println("Agregando equipo al arriendo...");
+                ControladorArriendoEquipos.getInstance().agregaEquipoToArriendo(codigo,codigoEquipo);
+                ControladorArriendoEquipos.getInstance().consultaEquipo();
+
+            }while(codigoEquipo!=0);
+        }
+    }
+
 }
 
