@@ -2,21 +2,21 @@ package Modelo;
 
 import java.time.Period;
 import java.util.ArrayList;
-import java.util.Date;
+import java.time.LocalDate;
 
 public class Arriendo {
     private long codigo;
-    private Date fechaInicio;
-    private Date fechaDevolucion;
+    private LocalDate fechaInicio;
+    private LocalDate fechaDevolucion;
     private EstadoArriendo estado;
     private Cliente cliente;
-    private ArrayList <DetalleArriendo> detallesArriendo= new ArrayList<>();
+    private ArrayList<DetalleArriendo> detallesArriendo = new ArrayList<>();
 
-    public Arriendo(long codigo, Date fechaInicio, Cliente cliente) {
+    public Arriendo(long codigo, LocalDate fechaInicio, Cliente cliente) {
         this.codigo = codigo;
         this.fechaInicio = fechaInicio;
-        this.cliente=cliente;
-        estado= EstadoArriendo.INICIADO;
+        this.cliente = cliente;
+        estado = EstadoArriendo.INICIADO;
 
     }
 
@@ -24,11 +24,11 @@ public class Arriendo {
         return codigo;
     }
 
-    public Date getFechaInicio() {
+    public LocalDate getFechaInicio() {
         return fechaInicio;
     }
 
-    public Date getFechaDevolucion() {
+    public LocalDate getFechaDevolucion() {
         return fechaDevolucion;
     }
 
@@ -36,29 +36,31 @@ public class Arriendo {
         return estado;
     }
 
-    public void setFechaDevolucion(Date fechaDevolucion) {
+    public void setFechaDevolucion(LocalDate fechaDevolucion) {
         this.fechaDevolucion = fechaDevolucion;
     }
 
     public void setEstado(EstadoArriendo estado) {
         this.estado = estado;
     }
-
     public void addDetalleArriendo(Equipo equipo) {
         DetalleArriendo detalle = new DetalleArriendo(equipo.getPrecioArriendoDia(), equipo,this);
         detalleArriendo.add(detalle);
         equipo.addDetalleArriendo(detalle);
-    }
+     }
 
-    public int getNumeroDiasArriendo(){
-        //trabajar con metodos Date.
-if (estado ==EstadoArriendo.DEVUELTO) {
-    if (fechaInicio.equals(fechaDevolucion)){
-        return 1;
-    }else{
-        int milisegundos = 86400000;
-        int totDias = (int) (fechaInicio.getTime() - fechaDevolucion.getTime()) / milisegundos;
-        return totDias;
+    public int getNumeroDiasArriendo() {
+        //trabajar con metodos LocalDate.
+        if (estado == EstadoArriendo.DEVUELTO) {
+            if (fechaInicio.equals(fechaDevolucion)) {
+                return 1;
+            } else {
+                Period period = Period.between(fechaInicio, getFechaDevolucion());
+                return period.getDays();
+            }
+        } else {
+            return 0;
+        }
     }
 }else {
     return 0;
@@ -124,10 +126,12 @@ if (estado ==EstadoArriendo.DEVUELTO) {
 
         return arr;
     }
-    public Cliente getCliente(){
+
+    public Cliente getCliente() {
         return cliente;
     }
-    public Equipo [] getEquipos(){
+
+    public Equipo[] getEquipos() {
         return detallesArriendo.toArray(new Equipo[0]);
 
     }
