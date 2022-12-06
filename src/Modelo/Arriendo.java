@@ -15,6 +15,7 @@ public class Arriendo {
 
     public Arriendo(long codigo, LocalDate fechaInicio, Cliente cliente) {
         this.codigo = codigo;
+        this.fechaInicio=fechaInicio;
         this.cliente = cliente;
         this.estado = EstadoArriendo.INICIADO;
         this.detallesArriendo = new ArrayList<>();
@@ -75,6 +76,13 @@ public class Arriendo {
             }
             return total;
         }
+        if (estado.equals(EstadoArriendo.ENTREGADO)) {
+
+            for (DetalleArriendo detalleArriendo : detallesArriendo) {
+                total += getNumeroDiasArriendo() * detalleArriendo.getEquipo().getPrecioArriendoDia();
+            }
+            return total;
+        }
         return 0;
 
     }
@@ -83,7 +91,7 @@ public class Arriendo {
 
         String[][] arr = new String[detallesArriendo.size()][3];
 
-        if (estado == EstadoArriendo.INICIADO && detallesArriendo == null) {
+        if (estado == EstadoArriendo.INICIADO) {
             return new String[0][0];
         }
 

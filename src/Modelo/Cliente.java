@@ -10,14 +10,14 @@ public class Cliente {
     private final String telefono;
     private boolean activo;
     //Relacion con arriendos
-    public ArrayList<Arriendo> arriendos=new ArrayList<>();
-
+    public ArrayList<Arriendo> arriendos;
     public Cliente(String rut, String nom, String dir, String tel) {
         this.direccion=dir;
         this.telefono=tel;
         this.nombre=nom;
         this.rut = rut;
         activo=true;
+        this.arriendos=new ArrayList<>();
     }
 
     public String getRut() {

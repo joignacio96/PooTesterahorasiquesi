@@ -14,17 +14,17 @@ public class ControladorArriendoEquipos {
     private static Controlador.ControladorArriendoEquipos instance = null;
     private final ArrayList<Cliente> clientes;
     private final ArrayList<Equipo> equipos;
-    private static ArrayList<Arriendo> arriendos;
+    private final ArrayList<Arriendo> arriendos;
 
-    private ControladorArriendoEquipos(ArrayList<Arriendo> arriendos) {
-        ControladorArriendoEquipos.arriendos = new ArrayList<>();
+    private ControladorArriendoEquipos() {
         clientes = new ArrayList<>();
         equipos = new ArrayList<>();
+        arriendos = new ArrayList<>();
     }
 
     public static Controlador.ControladorArriendoEquipos getInstance() {
         if (instance == null) {
-            instance = new Controlador.ControladorArriendoEquipos(arriendos);
+            instance = new Controlador.ControladorArriendoEquipos();
         }
         return instance;
     }
@@ -52,10 +52,10 @@ public class ControladorArriendoEquipos {
     public long creaArriendo(String rutCliente) throws ClienteException {
         Cliente cliente = buscaCliente(rutCliente);
         if (cliente == null) {
-            throw new ClienteException("fmdsjkjlfjsl");
+            throw new ClienteException("No existe un cliente para arrendar equipos");
         }
         if (!cliente.isActivo()) {
-            throw new ClienteException("fjdsklfjdskl");
+            throw new ClienteException("El cliente no esta activo para arrendar equipos");
         }
         int codArriendo = arriendos.size();
         Arriendo arriendo = new Arriendo(codArriendo, LocalDate.now(), cliente);
@@ -93,20 +93,20 @@ public class ControladorArriendoEquipos {
     public String agregaEquipoToArriendo(long codArriendo, long codEquipo) throws ArriendoException, EquipoException {
         Arriendo arriendo = buscaArriendo(codArriendo);
         if (arriendo == null) {
-            throw new ArriendoException("alho");
+            throw new ArriendoException("Error: ");
         }
         if (arriendo.getEstado() != EstadoArriendo.INICIADO) {
-            throw new ArriendoException("fjkldslf");
+            throw new ArriendoException("El estado del arriendo no esta iniciado");
         }
 
         Equipo equipo = buscaEquipo(codEquipo);
         if (equipo == null) {
-            throw new EquipoException("fjkdlslf");
+            throw new EquipoException("No existe el equipo solicitado");
         }
         if (equipo.getEstado() != EstadoEquipo.OPERATIVO) {
-            throw new EquipoException("fjdskkfjl");
+            throw new EquipoException("El equipo no esta operativo");
         } else if (equipo.isArrendado()) {
-            throw new EquipoException("dfjklsfjkldsfjl");
+            throw new EquipoException("El equipo esta arrendado");
         }
 
         arriendo.addDetalleArriendo(equipo);
@@ -117,10 +117,10 @@ public class ControladorArriendoEquipos {
     public long cierraArriendo(long codArriendo) throws ArriendoException {
         Arriendo arriendo = buscaArriendo(codArriendo);
         if (arriendo == null) {
-            throw new ArriendoException("jfkldskljf");
+            throw new ArriendoException("No existe el equipo arrendado");
         }
         if (arriendo.getEquipos().length == 0) {
-            throw new ArriendoException("kfldsjklfjdslk");
+            throw new ArriendoException("No quedan equipos");
         }
 
         arriendo.setEstado(EstadoArriendo.ENTREGADO);
@@ -205,10 +205,11 @@ public class ControladorArriendoEquipos {
 
         LocalDate fecha = arriendo.getFechaDevolucion();
         if (fecha == null) {
-            datos[3] = "No devuelto";
+            datos[2] = "No devuelto";
         } else {
-            datos[3] = fecha.format(formate);
+            datos[2] = fecha.format(formate);
         }
+        datos[3] = String.valueOf(arriendo.getEstado());
 
         datos[4] = cliente.getRut();
         datos[5] = cliente.getNombre();
@@ -327,20 +328,13 @@ public class ControladorArriendoEquipos {
     }
 
     public String[][] listaDetallesArriendos(long codArriendo) {
-        String[][] out = null;
-
-        for (Arriendo arriendo : arriendos) {
-
-            if (arriendo.getCodigo() == codArriendo) {
-
-                out = arriendo.getDetallesToString();
-
-            } else {
-                return new String[0][0];
-
-            }
+        Arriendo arriendo = buscaArriendo(codArriendo);
+        if (arriendo == null) {
+            return new String[0][0];
         }
-        return new String[0][0];
+
+        return arriendo.getDetallesToString();
+
     }
 
     public String[][] listaArriendo(LocalDate inicio, LocalDate fin) {
@@ -350,8 +344,8 @@ public class ControladorArriendoEquipos {
 
         ArrayList<String[]> datos = new ArrayList<>();
         for (Arriendo arriendo: arriendos) {
-            LocalDate fecha = arriendo.getFechaInicio();
-            if (fecha.isBefore(inicio) && fecha.isAfter(fin)) {
+            LocalDate fechaInicio = arriendo.getFechaInicio();
+            if (!fechaInicio.isBefore(inicio) && !fechaInicio.isAfter(fin)) {
                 String[] texto = new String[6];
                 texto[0] = String.valueOf(arriendo.getCodigo());
                 DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -405,6 +399,7 @@ public class ControladorArriendoEquipos {
     }
 
     public void devuelveEquipos(long codArriendo, EstadoEquipo[] estadoEquipos) throws ArriendoException {
+
         Arriendo arriendo = buscaArriendo(codArriendo);
 
         if (arriendo == null) {

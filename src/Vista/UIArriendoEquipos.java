@@ -8,9 +8,13 @@ import Modelo.Arriendo;
 import Modelo.Cliente;
 import Modelo.EstadoEquipo;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
+import java.util.zip.DataFormatException;
 
 public class UIArriendoEquipos {
     private static UIArriendoEquipos instance = null;
@@ -29,7 +33,7 @@ public class UIArriendoEquipos {
     }
 
     public void menu() {
-        int opcion=0;
+        int opcion = 0;
         System.out.println("******* SISTEMA DE ARRIENDO DE EQUIPOS DE NIEVE ****** ");
         do {
             System.out.println("\n\n\n***MENU DE OPCIONES***");
@@ -45,64 +49,71 @@ public class UIArriendoEquipos {
             System.out.println("10. Salir");
             System.out.println("\n\n\nIngrese opcion: ");
 
-            try{
+            try {
                 String opcionStr = teclado.next();
                 opcion = Integer.parseInt(opcionStr);
                 System.out.println("");
-            }catch (InputMismatchException e){
+            } catch (InputMismatchException e) {
                 System.out.println("\nError: ");
             }
-
 
             switch (opcion) {
                 case 1 -> creaCliente();            // Funciona
                 case 2 -> creaEquipo();             // Funciona
                 case 3 -> arriendaEquipos();        // Funciona
-                case 4 -> devuelveEquipos();        //
+                case 4 -> devuelveEquipos();        // Funciona
                 case 5 -> cambiaEstadoCliente();    // Funciona
                 case 6 -> listaClientes();          // Funciona
                 case 7 -> listaEquipos();           // Funciona
-//                case 8 -> listaArriendos();       //
-                case 9 -> listaDetallesArriendo();  //
+                case 8 -> listaArriendos();         // Funciona
+                case 9 -> listaDetallesArriendo();  // Funciona
                 case 10 -> System.exit(2);    // Funciona
                 default -> System.out.println("\nIngreso no valido");
             }
         } while (opcion != 10);
         teclado.close();
     }
-    public void devuelveEquipos(){
+
+    public void devuelveEquipos() {
         String rut;
         System.out.println("Devolviendo equipos arrendados...");
         System.out.println("Rut Cliente: ");
-        rut=teclado.next().trim();
-        if(rut.equals("")){
+        rut = teclado.next().trim();
+        if (rut.equals("")) {
             System.out.println("Debe ingresar algun rut valido");
             return;
         }
 
-        String [] datos=ControladorArriendoEquipos.getInstance().consultaCliente(rut);
+        String[] datos = ControladorArriendoEquipos.getInstance().consultaCliente(rut);
         if (datos.length == 0) {
             System.out.println("No existe cliente");
             return;
         }
-        System.out.println("Nombre Cliente: "+ datos[0]);
+        System.out.println("Nombre Cliente: " + datos[1]);
         System.out.println();
-        try{
-            String [][] devuelta=ControladorArriendoEquipos.getInstance().listaArriendoPorDevolver(rut);
+        try {
+            String[][] devuelta = ControladorArriendoEquipos.getInstance().listaArriendoPorDevolver(rut);
+            if (devuelta.length == 0) {
+                System.out.println("No hay arriendo por devolver");
+                return;
+            }
             System.out.println("Los arriendos por devolver son =>>");
-            System.out.printf("%-14s%-20s%-20s%-14s%-20s%s", "Codigo", "Fecha inicio", "Fecha devol.", "Estado", "Rut Cliente", "Monto Total");
-            for(int i=0;1<devuelta.length;i++){
-                if(devuelta[i][4].equals(rut)){
-                    System.out.printf("%s",devuelta[i][0]);
-                    System.out.printf("%-14s", devuelta[i][1]);
-                    System.out.printf("%-20s", devuelta[i][2]);
-                    System.out.printf("%-20s", devuelta[i][3]);
-                    System.out.printf("%-14s", devuelta[i][4]);
-                    System.out.printf("%-20s", devuelta[i][6]);
+            //%1$-15s%2$-30s%3$-20s%4$-15s%n
+            System.out.printf("%1$-14s%2$-20s%3$-20s%4$-14s%5$-20s%6$-10s%n", "Codigo", "Fecha inicio", "Fecha devol.", "Estado", "Rut Cliente", "Monto Total");
+            System.out.println("");
+            for (int i = 0; i < devuelta.length; i++) {
+                if (devuelta[i][4].equals(rut)) {
+                    System.out.printf("%1$-14s%2$-20s%3$-20s%4$-14s%5$-20s%6$-10s%n", devuelta[i][0]
+                            , devuelta[i][1]
+                            , devuelta[i][2]
+                            , devuelta[i][3]
+                            , devuelta[i][4]
+                            , devuelta[i][5]);
                     System.out.println();
                 }
             }
-            System.out.print("Codigo arriendo a devolver: ");
+            System.out.println("");
+            System.out.println("Codigo arriendo a devolver: ");
             boolean valido = true;
             long code;
             do {
@@ -116,12 +127,15 @@ public class UIArriendoEquipos {
                 }
             } while (valido);
             System.out.println("Ingrese codigo y estado en el que se devuelve cada equipo que se indica >>>");
-            String [][] detalle=ControladorArriendoEquipos.getInstance().listaDetallesArriendos(code);
+
+            String[][] detalle = ControladorArriendoEquipos.getInstance().listaDetallesArriendos(code);
+
             int estado;
             ArrayList<EstadoEquipo> estados = new ArrayList<>();
-            for(String[] detalles:detalle){
+            System.out.println(detalle.length);
+            for (String[] detalles : detalle) {
                 do {
-                    System.out.println(detalles[1]+"("+detalles[0]+") -> Estado (1: Operativo, 2: reparacion, 3: Dado de baja: ");
+                    System.out.println(detalles[1] + "(" + detalles[0] + ") -> Estado (1: Operativo, 2: reparacion, 3: Dado de baja): ");
                     try {
                         String estadoStr = teclado.next();
                         estado = Integer.parseInt(estadoStr);
@@ -129,24 +143,24 @@ public class UIArriendoEquipos {
                         System.out.println("Tiene que ser un valor numerico");
                         estado = -1;
                     }
-                } while (estado==1 || estado==2 || estado==3);
+                } while (estado != 1 && estado != 2 && estado != 3);
 
-                if(estado==1){
+                if (estado == 1) {
                     estados.add(EstadoEquipo.OPERATIVO);
                 }
-                if(estado==2){
+                if (estado == 2) {
                     estados.add(EstadoEquipo.EN_REPARACION);
                 }
-                if(estado==3){
+                if (estado == 3) {
                     estados.add(EstadoEquipo.DADO_DE_BAJA);
                 }
                 System.out.println();
             }
             ControladorArriendoEquipos.getInstance().devuelveEquipos(code, estados.toArray(new EstadoEquipo[0]));
-            System.out.println(detalle.length+ "equipo(s) fue(ron) devuelto(s) exitosamente");
-        }catch(ClienteException e){
+            System.out.println(detalle.length + "equipo(s) fue(ron) devuelto(s) exitosamente");
+        } catch (ClienteException e) {
             System.out.println(e.getMessage());
-        }catch(ArriendoException e){
+        } catch (ArriendoException e) {
             System.out.println(e.getMessage());
         }
     }
@@ -161,7 +175,7 @@ public class UIArriendoEquipos {
             System.out.printf("%1$-15s%2$-30s%3$-20s%4$-15s%n", "RUT", "Nombre", "Direccion", "Telefono");
             for (String[] listado : datosClientes) {
 
-                System.out.printf("%-25s%-12s%10s%10sn", listado[0], listado[1], listado[2], listado[3], listado[4]);
+                System.out.printf("%1$-15s%2$-30s%3$-20s%4$-15s%n", listado[0], listado[1], listado[2], listado[3], listado[4]);
                 i++;
             }
         } else {
@@ -174,7 +188,7 @@ public class UIArriendoEquipos {
         if (datosEquipos.length > 0) {
             System.out.println("\nLISTADO DE EQUIPOS");
             System.out.println("------------");
-            System.out.printf("%-15s%-30s%-20s%-15s%n", "Codigo", "Descripcion", "Precio", "fkdjsklf");
+            System.out.printf("%-15s%-30s%-20s%-15s%n", "Codigo", "Descripcion", "Precio", "Estado");
             for (String[] listado : datosEquipos) {
                 System.out.printf("%-15s%-30s%-20s%-15s%n", listado[0], listado[1], listado[2], listado[3]);
             }
@@ -214,7 +228,7 @@ public class UIArriendoEquipos {
             ControladorArriendoEquipos.getInstance().creaCliente(rut, nom, dir, tel);
             System.out.println("Usted ha creado satisfactoriamente el cliente");
         } catch (ClienteException e) {
-            System.out.println("Error creando el cliente, revise los datos nuevamente");
+            System.out.println("Ya existe un cliente con los datos obtenidos, intentelo nuevamente");
         }
     }
 
@@ -265,7 +279,35 @@ public class UIArriendoEquipos {
         }
     }
 
-    public void arriendaEquipos(){
+    public void listaArriendos() {
+        LocalDate inicio, fin;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        try {
+            System.out.print("Fecha inicio preiodo (dd/mm/aaaa):");
+            inicio = LocalDate.parse(teclado.next(), formatter);
+            System.out.print("Fecha fin (dd/mm/aaaa):");
+            fin = LocalDate.parse(teclado.next(), formatter);
+        } catch (DateTimeParseException e) {
+            System.out.println("La fecha no tieene un formato valido");
+            return;
+        }
+        ControladorArriendoEquipos controlador = ControladorArriendoEquipos.getInstance();
+        String[][] listaArr = controlador.listaArriendo(inicio, fin);
+        if (listaArr.length == 0) {
+            System.out.println("No existen datos de arriendos");
+            return;
+        }
+        System.out.println("LISTADO ARRIENDOS");
+        System.out.println("-----------------------------");
+        System.out.println("");
+        System.out.printf("%-8s %-14s %-14s %-12s %-15s %-13s%n", "Codigo", "Fecha Inicio", "Fecha devol.", "Estado", "Rut Cliente", "Monto Total");
+        for (String[] lista : listaArr) {
+            System.out.printf("%-8s %-14s %-14s %-12s %-15s %-13s%n", lista[0], lista[1], lista[2], lista[3], lista[4], lista[5]);
+        }
+    }
+
+    public void arriendaEquipos() {
         System.out.println("Arrendando equipos...");
         ControladorArriendoEquipos controller = ControladorArriendoEquipos.getInstance();
 
@@ -295,7 +337,7 @@ public class UIArriendoEquipos {
             try {
                 String codeSrt = teclado.next();
                 codigoEquipo = Integer.parseInt(codeSrt);
-            }catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 System.out.println("Codigo debe ser numerico");
                 return;
             }
@@ -336,6 +378,39 @@ public class UIArriendoEquipos {
     }
 
     public void listaDetallesArriendo() {
+        System.out.print("Codigo arriendo: ");
+        long codigo;
+        try {
+            String codString = teclado.next();
+            codigo = Long.parseLong(codString);
+        } catch (NumberFormatException e) {
+            System.out.println("Codigo debe ser un numero");
+            return;
+        }
+        ControladorArriendoEquipos controlado = ControladorArriendoEquipos.getInstance();
+        String[] datosArriendo = controlado.consultaArriendo(codigo);
+        if (datosArriendo.length == 0) {
+            System.out.println("No existe el arriendo");
+            return;
+        }
+        System.out.println("-------------------------------");
+        System.out.printf("Codigo: %s\n", datosArriendo[0]);
+        System.out.printf("Fecha Inicio: %s\n", datosArriendo[1]);
+        System.out.printf("Fecha Devolucion: %s\n", datosArriendo[2]);
+        System.out.printf("Estado: %s\n", datosArriendo[3]);
+        System.out.printf("Rut cliente: %s\n", datosArriendo[4]);
+        System.out.printf("Nombre cliente: %s\n", datosArriendo[5]);
+        System.out.printf("Monto total: $%s\n", datosArriendo[6]);
+        System.out.println("----------------------------------");
+        System.out.println("\t\t\tDETALLE DEL ARRIENDO");
+        System.out.println("----------------------------------");
+        String[][] datosDetalles = controlado.listaDetallesArriendos(codigo);
+        // No es necesario revisar que el arriendo exista ya que en cosultaArriendo se reviso
+        System.out.printf("%-13s %-25s %-23s\n", "Codigo Equipo", "Descripcion equipo", "Precio arriendo por dia");
+        for (String[] equipo : datosDetalles) {
+            System.out.printf("%-13s %-25s %-23s\n", equipo[0], equipo[1], equipo[2]);
+        }
+
     }
 
     private boolean validarRut(String rut) {
