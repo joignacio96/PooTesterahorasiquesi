@@ -53,7 +53,7 @@ public class UIArriendoEquipos {
                 String opcionStr = teclado.next();
                 opcion = Integer.parseInt(opcionStr);
                 System.out.println("");
-            } catch (InputMismatchException e) {
+            } catch (NumberFormatException e) {
                 System.out.println("\nError: ");
             }
 
