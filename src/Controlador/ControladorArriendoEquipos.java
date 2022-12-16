@@ -409,17 +409,24 @@ public class ControladorArriendoEquipos {
     }
 
     public void creaConjunto (long cod,String desc,long []codEquipos) throws EquipoException {
-
                     if(buscaEquipo(cod)!=null){
                         throw new EquipoException("Ya existe un equipo con el codigo dado");
                     }
-                    else{
-                        int precioArriendoDia;
                         for(int i=0;i<codEquipos.length;i++ ) {
-                            Equipo ecodEquipos[i]=
+                            if(buscaEquipo(codEquipos[i])==null){
+                                throw new EquipoException("Codigo de un equipo componente es incorrecto");
+
+                            }
+                           Equipo equipo=buscaEquipo(codEquipos[i]);
+                            equipo.getPrecioArriendoDia();
 
                         }
-                    }
+                        int precioArriendoDia;
+
+
+
+                        Conjunto conjunto= new Conjunto(cod,desc,)
+
                 }
 
 
