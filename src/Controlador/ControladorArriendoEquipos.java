@@ -40,7 +40,6 @@ public class ControladorArriendoEquipos {
     }
 
 
-
     public long creaArriendo(String rutCliente) throws ClienteException {
         Cliente cliente = buscaCliente(rutCliente);
         if (cliente == null) {
