@@ -3,6 +3,7 @@ package Modelo;
 import java.time.Period;
 import java.util.ArrayList;
 import java.time.LocalDate;
+import java.util.Date;
 
 public class Arriendo {
     private long codigo;
@@ -10,14 +11,15 @@ public class Arriendo {
     private LocalDate fechaDevolucion;
     private EstadoArriendo estado;
     private Cliente cliente;
-    private ArrayList<DetalleArriendo> detallesArriendo = new ArrayList<>();
+    private ArrayList<DetalleArriendo> detallesArriendo;
 
     public Arriendo(long codigo, LocalDate fechaInicio, Cliente cliente) {
         this.codigo = codigo;
-        this.fechaInicio = fechaInicio;
+        this.fechaInicio=fechaInicio;
         this.cliente = cliente;
-        estado = EstadoArriendo.INICIADO;
-
+        this.estado = EstadoArriendo.INICIADO;
+        this.detallesArriendo = new ArrayList<>();
+        cliente.addArriendo(this);
     }
 
     public long getCodigo() {
@@ -43,11 +45,11 @@ public class Arriendo {
     public void setEstado(EstadoArriendo estado) {
         this.estado = estado;
     }
+
     public void addDetalleArriendo(Equipo equipo) {
-        DetalleArriendo detalle = new DetalleArriendo(equipo.getPrecioArriendoDia(), equipo,this);
-        detalleArriendo.add(detalle);
-        equipo.addDetalleArriendo(detalle);
-     }
+        DetalleArriendo detalle = new DetalleArriendo(equipo.getPrecioArriendoDia(), equipo, this);
+        detallesArriendo.add(detalle);
+    }
 
     public int getNumeroDiasArriendo() {
         //trabajar con metodos LocalDate.
@@ -62,10 +64,6 @@ public class Arriendo {
             return 0;
         }
     }
-}else {
-    return 0;
-}
-}
 
     public long getMontoTotal() {
 
@@ -78,36 +76,22 @@ public class Arriendo {
             }
             return total;
         }
-
-        if (estado.equals(EstadoArriendo.INICIADO)) {
-
-            for (DetalleArriendo detalleArriendo : detallesArriendo) {
-                if (detalleArriendo.getEquipo() == null) {
-                    return 0;
-                }
-            }
+        if (estado.equals(EstadoArriendo.ENTREGADO)) {
 
             for (DetalleArriendo detalleArriendo : detallesArriendo) {
-                total += detalleArriendo.getEquipo().getPrecioArriendoDia();
-            }
-            return total;
-
-        } else {
-            for (DetalleArriendo detalleArriendo : detallesArriendo) {
-                total += detalleArriendo.getEquipo().getPrecioArriendoDia();
+                total += getNumeroDiasArriendo() * detalleArriendo.getEquipo().getPrecioArriendoDia();
             }
             return total;
         }
-
+        return 0;
 
     }
 
-
-    public String[][] getDetallesToString() {
+    public String[][] getDetallesToString () {
 
         String[][] arr = new String[detallesArriendo.size()][3];
 
-        if (estado == EstadoArriendo.INICIADO && detallesArriendo == null) {
+        if (estado == EstadoArriendo.INICIADO) {
             return new String[0][0];
         }
 
@@ -127,12 +111,15 @@ public class Arriendo {
         return arr;
     }
 
-    public Cliente getCliente() {
+    public Cliente getCliente () {
         return cliente;
     }
 
-    public Equipo[] getEquipos() {
-        return detallesArriendo.toArray(new Equipo[0]);
-
+    public Equipo[] getEquipos () {
+        ArrayList<Equipo> equipos = new ArrayList<>();
+        for (DetalleArriendo detalleArriendo: detallesArriendo) {
+            equipos.add(detalleArriendo.getEquipo());
+        }
+        return equipos.toArray(new Equipo[0]);
     }
 }

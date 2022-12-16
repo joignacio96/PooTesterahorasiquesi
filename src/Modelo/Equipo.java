@@ -3,18 +3,20 @@ package Modelo;
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class Equipo {
+public abstract class Equipo {
     private long codigo;
     private String descripcion;
     private long precioArriendoDia;
     private EstadoEquipo estado;
     private ArrayList <DetalleArriendo> detalles;
+    private ArrayList<Conjunto>conjuntos;
 
     public Equipo(long codigo, String descripcion, long precioArriendoDia) {
         this.codigo = codigo;
         this.descripcion = descripcion;
         this.precioArriendoDia = precioArriendoDia;
         this.estado = EstadoEquipo.OPERATIVO;
+        this.detalles = new ArrayList<>();
     }
 
     public long getCodigo() {
@@ -37,8 +39,7 @@ public class Equipo {
         this.estado = estado;
     }
     public void addDetalleArriendo (DetalleArriendo detalle){
-ArrayList<DetalleArriendo>arriendo=new ArrayList<>();
-arriendo.add(detalle);
+        detalles.add(detalle);
     }
 
     public boolean isArrendado(){
@@ -46,8 +47,7 @@ arriendo.add(detalle);
             return false;
         }
         int i=(detalles.size()-1);
-        //xq no me pesca el get estado?
-        return detalles.get(i).getArriendo().getEstado().equals((EstadoArriendo.ENTREGADO));
+        return detalles.get(i).getArriendo().getEstado() == (EstadoArriendo.ENTREGADO);
     }
 }
 

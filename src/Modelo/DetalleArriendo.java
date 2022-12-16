@@ -5,12 +5,13 @@ import java.util.ArrayList;
 public class DetalleArriendo {
     private long precioAplicado;
     private Equipo equipo;
-    private ArrayList <Arriendo> arriendo =new ArrayList<>();
+    private Arriendo arriendo;
 
-    public DetalleArriendo(long precioAplicado, Equipo equipo, ArrayList<Arriendo> arriendo) {
+    public DetalleArriendo(long precioAplicado, Equipo equipo, Arriendo arriendo) {
         this.precioAplicado = precioAplicado;
         this.equipo = equipo;
         this.arriendo = arriendo;
+        equipo.addDetalleArriendo(this);
     }
 
     public long getPrecioAplicado() {
@@ -21,7 +22,7 @@ public class DetalleArriendo {
         return equipo;
     }
 
-    public ArrayList<Arriendo> getArriendo() {
+    public Arriendo getArriendo() {
         return arriendo;
     }
 }

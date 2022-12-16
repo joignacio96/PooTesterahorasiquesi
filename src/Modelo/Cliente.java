@@ -10,14 +10,14 @@ public class Cliente {
     private final String telefono;
     private boolean activo;
     //Relacion con arriendos
-    public ArrayList<Arriendo> arriendos=new ArrayList<>();
-
+    public ArrayList<Arriendo> arriendos;
     public Cliente(String rut, String nom, String dir, String tel) {
         this.direccion=dir;
         this.telefono=tel;
         this.nombre=nom;
         this.rut = rut;
         activo=true;
+        this.arriendos=new ArrayList<>();
     }
 
     public String getRut() {
@@ -53,15 +53,16 @@ if (activo){
             arriendos.add(arriendo);
         } else System.out.println("No existe el arriendo");
     }
+
     public Arriendo[] getArriendosPorDevolver(){
-        Arriendo[]arriendoDevolver=new Arriendo[arriendos.size()];
+        ArrayList<Arriendo> arriendoPorDevoelr = new ArrayList<>();
         for (Arriendo arriendo:arriendos) {
             if(arriendo.getEstado().equals(EstadoArriendo.ENTREGADO)){
-                arriendoDevolver[arriendos.size()]=arriendo;
+                arriendoPorDevoelr.add(arriendo);
             }
 
         }
-        return arriendoDevolver;
+        return arriendoPorDevoelr.toArray(new Arriendo[0]);
     }
 
 
