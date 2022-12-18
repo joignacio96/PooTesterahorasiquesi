@@ -4,10 +4,7 @@ import Controlador.ControladorArriendoEquipos;
 import Excepciones.ArriendoException;
 import Excepciones.ClienteException;
 import Excepciones.EquipoException;
-import Modelo.Arriendo;
-import Modelo.Cliente;
-import Modelo.EstadoEquipo;
-import Modelo.Implemento;
+import Modelo.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -243,7 +240,7 @@ public class UIArriendoEquipos {
         String descripcion, code, precio, tipoEquipo;
         long codigo = 0, precioArriendoDia = 0;
         System.out.print("Creando un nuevo equipo... ");
-        System.out.println("\n\n\nCodigo: ");
+        System.out.println("\n\nCodigo: ");
         code = teclado.next().trim();
 
         if (code.isBlank() || code.isEmpty()) {
@@ -292,6 +289,7 @@ public class UIArriendoEquipos {
                 }
                 Implemento implemento = new Implemento(codigo, descripcion, precioArriendoDia);
                 System.out.println("Se ha creado exitosamente un nuevo implemento");
+                return;
 
             case "2":
                 System.out.println("Numero de equipos componentes:");
@@ -300,176 +298,178 @@ public class UIArriendoEquipos {
                 for (int i = 0; i < numComponentes; i++) {
                     System.out.println("Codigo equipo " + i + " de " + numComponentes);
                     long codEquipo = teclado.nextLong();
-
-
-                    try {
-                        ControladorArriendoEquipos.getInstance().creaEquipo(codigo, descripcion, precioArriendoDia);
-                    } catch (EquipoException e) {
-                        System.out.println("Error creando el equipo, intentelo de nuevo");
-                    }
+                    codEquipos[i] = codEquipo;
                 }
+                try {
+                    ControladorArriendoEquipos.getInstance().creaConjunto(codigo, descripcion, codEquipos);
+                } catch (EquipoException e) {
+                    e.getMessage();
+                }
+                System.out.println("\nSe ha creado exitosamente un nuevo conjunto");
+
         }
     }
 
-                public void listaArriendos () {
-                LocalDate inicio, fin;
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-                try {
-                    System.out.print("Fecha inicio periodo (dd/mm/aaaa):");
-                    inicio = LocalDate.parse(teclado.next(), formatter);
-                    System.out.print("Fecha fin (dd/mm/aaaa):");
-                    fin = LocalDate.parse(teclado.next(), formatter);
-                } catch (DateTimeParseException e) {
-                    System.out.println("La fecha no tiene un formato valido");
-                    return;
-                }
-                ControladorArriendoEquipos controlador = ControladorArriendoEquipos.getInstance();
-                String[][] listaArr = controlador.listaArriendo(inicio, fin);
-                if (listaArr.length == 0) {
-                    System.out.println("No existen datos de arriendos");
-                    return;
-                }
-                System.out.println("LISTADO ARRIENDOS");
-                System.out.println("-----------------------------");
-                System.out.println("");
-                System.out.printf("%-8s %-14s %-14s %-12s %-15s %-13s%n", "Codigo", "Fecha Inicio", "Fecha devol.", "Estado", "Rut Cliente", "Monto Total");
-                for (String[] lista : listaArr) {
-                    System.out.printf("%-8s %-14s %-14s %-12s %-15s %-13s%n", lista[0], lista[1], lista[2], lista[3], lista[4], lista[5]);
-                }
-            }
+    public void listaArriendos() {
+        LocalDate inicio, fin;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-            public void arriendaEquipos () {
-                System.out.println("Arrendando equipos...");
-                ControladorArriendoEquipos controller = ControladorArriendoEquipos.getInstance();
-
-                System.out.println("Rut cliente");
-                String rut = teclado.next();
-                if (!validarRut(rut)) {
-                    System.out.println("Rut no valido");
-                    return;
-                }
-
-                String eleccion;
-                long codeArriendo;
-
-                try {
-                    String[] cliente = controller.consultaCliente(rut);
-                    codeArriendo = controller.creaArriendo(rut);
-                    System.out.println("Nombre cliente: " + cliente[1]);
-                } catch (ClienteException e) {
-                    System.out.println(e.getMessage());
-                    return;
-                }
-
-                String opcion = "s";
-                do {
-                    System.out.println("Ingresa codigo del equipo");
-                    int codigoEquipo;
-                    try {
-                        String codeSrt = teclado.next();
-                        codigoEquipo = Integer.parseInt(codeSrt);
-                    } catch (NumberFormatException e) {
-                        System.out.println("Codigo debe ser numerico");
-                        return;
-                    }
-                    try {
-                        controller.agregaEquipoToArriendo(codeArriendo, codigoEquipo);
-                    } catch (ArriendoException | EquipoException e) {
-                        System.out.println(e.getMessage());
-                    }
-                    do {
-                        System.out.println("Desea ingresar otro equipo (s/n)");
-                        opcion = teclado.next();
-                    } while (!opcion.equals("s") && !opcion.equals("n"));
-                } while (opcion.equals("s"));
-
-                try {
-                    controller.cierraArriendo(codeArriendo);
-                } catch (ArriendoException e) {
-                    System.out.println(e.getMessage());
-                }
-            }
-
-            public void cambiaEstadoCliente () {
-                System.out.println("Cambiando el estado del cliente...");
-                System.out.print("Rut cliente: ");
-                String rut = teclado.next();
-                if (!validarRut(rut)) {
-                    System.out.println("Rut no es valido");
-                    return;
-                }
-                String[] datosCliente;
-                try {
-                    ControladorArriendoEquipos.getInstance().cambiaEstadoCliente(rut);
-                    datosCliente = ControladorArriendoEquipos.getInstance().consultaCliente(rut);
-                    System.out.printf("Se ha cambiado exitosamente el estado del cliente \"%s\" a \"%s\"%n", datosCliente[1], datosCliente[4]);
-                } catch (ClienteException e) {
-                    System.out.println(e.getMessage());
-                }
-            }
-
-            public void listaDetallesArriendo () {
-                System.out.print("Codigo arriendo: ");
-                long codigo;
-                try {
-                    String codString = teclado.next();
-                    codigo = Long.parseLong(codString);
-                } catch (NumberFormatException e) {
-                    System.out.println("Codigo debe ser un numero");
-                    return;
-                }
-                ControladorArriendoEquipos controlado = ControladorArriendoEquipos.getInstance();
-                String[] datosArriendo = controlado.consultaArriendo(codigo);
-                if (datosArriendo.length == 0) {
-                    System.out.println("No existe el arriendo");
-                    return;
-                }
-                System.out.println("-------------------------------");
-                System.out.printf("Codigo: %s\n", datosArriendo[0]);
-                System.out.printf("Fecha Inicio: %s\n", datosArriendo[1]);
-                System.out.printf("Fecha Devolucion: %s\n", datosArriendo[2]);
-                System.out.printf("Estado: %s\n", datosArriendo[3]);
-                System.out.printf("Rut cliente: %s\n", datosArriendo[4]);
-                System.out.printf("Nombre cliente: %s\n", datosArriendo[5]);
-                System.out.printf("Monto total: $%s\n", datosArriendo[6]);
-                System.out.println("----------------------------------");
-                System.out.println("\t\t\tDETALLE DEL ARRIENDO");
-                System.out.println("----------------------------------");
-                String[][] datosDetalles = controlado.listaDetallesArriendos(codigo);
-                // No es necesario revisar que el arriendo exista ya que en cosultaArriendo se reviso
-                System.out.printf("%-13s %-25s %-23s\n", "Codigo Equipo", "Descripcion equipo", "Precio arriendo por dia");
-                for (String[] equipo : datosDetalles) {
-                    System.out.printf("%-13s %-25s %-23s\n", equipo[0], equipo[1], equipo[2]);
-                }
-
-            }
-
-            private boolean validarRut (String rut){
-                boolean validacion = false;
-                rut = rut.toUpperCase();
-                rut = rut.replace(".", "");
-                rut = rut.replace("-", "");
-                int rutNumerico;
-                try {
-                    rutNumerico = Integer.parseInt(rut.substring(0, rut.length() - 1));
-                } catch (NumberFormatException e) {
-                    return false;
-                }
-
-                char verificador = rut.charAt(rut.length() - 1);
-
-                int m = 0, s = 1;
-                for (; rutNumerico != 0; rutNumerico /= 10) {
-                    s = (s + rutNumerico % 10 * (9 - m++ % 6)) % 11;
-                }
-                if (verificador == (char) (s != 0 ? s + 47 : 75)) {
-                    validacion = true;
-                }
-
-                return validacion;
-            }
+        try {
+            System.out.print("Fecha inicio periodo (dd/mm/aaaa):");
+            inicio = LocalDate.parse(teclado.next(), formatter);
+            System.out.print("Fecha fin (dd/mm/aaaa):");
+            fin = LocalDate.parse(teclado.next(), formatter);
+        } catch (DateTimeParseException e) {
+            System.out.println("La fecha no tiene un formato valido");
+            return;
         }
+        ControladorArriendoEquipos controlador = ControladorArriendoEquipos.getInstance();
+        String[][] listaArr = controlador.listaArriendo(inicio, fin);
+        if (listaArr.length == 0) {
+            System.out.println("No existen datos de arriendos");
+            return;
+        }
+        System.out.println("LISTADO ARRIENDOS");
+        System.out.println("-----------------------------");
+        System.out.println("");
+        System.out.printf("%-8s %-14s %-14s %-12s %-15s %-13s%n", "Codigo", "Fecha Inicio", "Fecha devol.", "Estado", "Rut Cliente", "Monto Total");
+        for (String[] lista : listaArr) {
+            System.out.printf("%-8s %-14s %-14s %-12s %-15s %-13s%n", lista[0], lista[1], lista[2], lista[3], lista[4], lista[5]);
+        }
+    }
+
+    public void arriendaEquipos() {
+        System.out.println("Arrendando equipos...");
+        ControladorArriendoEquipos controller = ControladorArriendoEquipos.getInstance();
+
+        System.out.println("Rut cliente");
+        String rut = teclado.next();
+        if (!validarRut(rut)) {
+            System.out.println("Rut no valido");
+            return;
+        }
+
+        String eleccion;
+        long codeArriendo;
+
+        try {
+            String[] cliente = controller.consultaCliente(rut);
+            codeArriendo = controller.creaArriendo(rut);
+            System.out.println("Nombre cliente: " + cliente[1]);
+        } catch (ClienteException e) {
+            System.out.println(e.getMessage());
+            return;
+        }
+
+        String opcion = "s";
+        do {
+            System.out.println("Ingresa codigo del equipo");
+            int codigoEquipo;
+            try {
+                String codeSrt = teclado.next();
+                codigoEquipo = Integer.parseInt(codeSrt);
+            } catch (NumberFormatException e) {
+                System.out.println("Codigo debe ser numerico");
+                return;
+            }
+            try {
+                controller.agregaEquipoToArriendo(codeArriendo, codigoEquipo);
+            } catch (ArriendoException | EquipoException e) {
+                System.out.println(e.getMessage());
+            }
+            do {
+                System.out.println("Desea ingresar otro equipo (s/n)");
+                opcion = teclado.next();
+            } while (!opcion.equals("s") && !opcion.equals("n"));
+        } while (opcion.equals("s"));
+
+        try {
+            controller.cierraArriendo(codeArriendo);
+        } catch (ArriendoException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public void cambiaEstadoCliente() {
+        System.out.println("Cambiando el estado del cliente...");
+        System.out.print("Rut cliente: ");
+        String rut = teclado.next();
+        if (!validarRut(rut)) {
+            System.out.println("Rut no es valido");
+            return;
+        }
+        String[] datosCliente;
+        try {
+            ControladorArriendoEquipos.getInstance().cambiaEstadoCliente(rut);
+            datosCliente = ControladorArriendoEquipos.getInstance().consultaCliente(rut);
+            System.out.printf("Se ha cambiado exitosamente el estado del cliente \"%s\" a \"%s\"%n", datosCliente[1], datosCliente[4]);
+        } catch (ClienteException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public void listaDetallesArriendo() {
+        System.out.print("Codigo arriendo: ");
+        long codigo;
+        try {
+            String codString = teclado.next();
+            codigo = Long.parseLong(codString);
+        } catch (NumberFormatException e) {
+            System.out.println("Codigo debe ser un numero");
+            return;
+        }
+        ControladorArriendoEquipos controlado = ControladorArriendoEquipos.getInstance();
+        String[] datosArriendo = controlado.consultaArriendo(codigo);
+        if (datosArriendo.length == 0) {
+            System.out.println("No existe el arriendo");
+            return;
+        }
+        System.out.println("-------------------------------");
+        System.out.printf("Codigo: %s\n", datosArriendo[0]);
+        System.out.printf("Fecha Inicio: %s\n", datosArriendo[1]);
+        System.out.printf("Fecha Devolucion: %s\n", datosArriendo[2]);
+        System.out.printf("Estado: %s\n", datosArriendo[3]);
+        System.out.printf("Rut cliente: %s\n", datosArriendo[4]);
+        System.out.printf("Nombre cliente: %s\n", datosArriendo[5]);
+        System.out.printf("Monto total: $%s\n", datosArriendo[6]);
+        System.out.println("----------------------------------");
+        System.out.println("\t\t\tDETALLE DEL ARRIENDO");
+        System.out.println("----------------------------------");
+        String[][] datosDetalles = controlado.listaDetallesArriendos(codigo);
+        // No es necesario revisar que el arriendo exista ya que en cosultaArriendo se reviso
+        System.out.printf("%-13s %-25s %-23s\n", "Codigo Equipo", "Descripcion equipo", "Precio arriendo por dia");
+        for (String[] equipo : datosDetalles) {
+            System.out.printf("%-13s %-25s %-23s\n", equipo[0], equipo[1], equipo[2]);
+        }
+
+    }
+
+    private boolean validarRut(String rut) {
+        boolean validacion = false;
+        rut = rut.toUpperCase();
+        rut = rut.replace(".", "");
+        rut = rut.replace("-", "");
+        int rutNumerico;
+        try {
+            rutNumerico = Integer.parseInt(rut.substring(0, rut.length() - 1));
+        } catch (NumberFormatException e) {
+            return false;
+        }
+
+        char verificador = rut.charAt(rut.length() - 1);
+
+        int m = 0, s = 1;
+        for (; rutNumerico != 0; rutNumerico /= 10) {
+            s = (s + rutNumerico % 10 * (9 - m++ % 6)) % 11;
+        }
+        if (verificador == (char) (s != 0 ? s + 47 : 75)) {
+            validacion = true;
+        }
+
+        return validacion;
+    }
+}
 
 
 
