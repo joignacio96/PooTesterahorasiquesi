@@ -1,8 +1,9 @@
 package Modelo;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class DetalleArriendo {
+public class DetalleArriendo implements Serializable {
     private long precioAplicado;
     private Equipo equipo;
     private Arriendo arriendo;

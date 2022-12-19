@@ -1,9 +1,10 @@
 package Modelo;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class Cliente {
+public class Cliente implements Serializable {
     private final String rut;
     private final String nombre;
     private final String direccion;
