@@ -5,7 +5,6 @@ import Excepciones.ClienteException;
 import Excepciones.EquipoException;
 import Modelo.*;
 
-import javax.imageio.IIOException;
 import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -534,8 +533,34 @@ public class ControladorArriendoEquipos implements Serializable {
         arriendo.setFechaDevolucion(LocalDate.now());
     }
 
+    public void creaConjunto(long cod, String desc, long[] codEquipos) throws EquipoException {
+        if (buscaEquipo(cod) != null) {
+            throw new EquipoException("Ya existe un equipo con el codigo dado");
+        } else{
+            for (int i = 0; i < codEquipos.length; i++) {
+                if (buscaEquipo(codEquipos[i]) == null) {
+                    throw new EquipoException("Codigo de un equipo componente es incorrecto");
+
+                }
+
+            }
+        }
+        Conjunto conjunto = new Conjunto(cod, desc);
+        System.out.println("Se ha creado exitosamente un conjunto");;
+        for (int i = 0; i < codEquipos.length; i++) {
+            equipos.add(buscaEquipo(codEquipos[i]));
+
+        }
+    }
 
 }
+
+
+
+
+
+
+
 
 
 

@@ -4,17 +4,16 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class Equipo implements Serializable {
+public abstract class Equipo implements Serializable {
     private long codigo;
     private String descripcion;
-    private long precioArriendoDia;
     private EstadoEquipo estado;
     private ArrayList <DetalleArriendo> detalles;
+    private ArrayList<Conjunto>conjuntos;
 
-    public Equipo(long codigo, String descripcion, long precioArriendoDia) {
+    public Equipo(long codigo, String descripcion) {
         this.codigo = codigo;
         this.descripcion = descripcion;
-        this.precioArriendoDia = precioArriendoDia;
         this.estado = EstadoEquipo.OPERATIVO;
         this.detalles = new ArrayList<>();
     }
@@ -27,9 +26,7 @@ public class Equipo implements Serializable {
         return descripcion;
     }
 
-    public long getPrecioArriendoDia() {
-        return precioArriendoDia;
-    }
+    public abstract long getPrecioArriendoDia();
 
     public EstadoEquipo getEstado() {
         return estado;
