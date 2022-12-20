@@ -6,7 +6,6 @@ public class DetalleArriendo {
     private long precioAplicado;
     private Equipo equipo;
     private Arriendo arriendo;
-    private long precioArriendoDia;
 
     public DetalleArriendo(long precioAplicado, Equipo equipo, Arriendo arriendo) {
         this.precioAplicado = precioAplicado;

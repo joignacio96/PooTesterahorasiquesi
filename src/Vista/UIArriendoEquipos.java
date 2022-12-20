@@ -30,7 +30,7 @@ public class UIArriendoEquipos {
         return instance;
     }
 
-    public void menu() throws EquipoException {
+    public void menu() {
         int opcion = 0;
         System.out.println("******* SISTEMA DE ARRIENDO DE EQUIPOS DE NIEVE ****** ");
         do {
@@ -81,7 +81,6 @@ public class UIArriendoEquipos {
             System.out.println("Debe ingresar algun rut valido");
             return;
         }
-
 
         String[] datos = ControladorArriendoEquipos.getInstance().consultaCliente(rut);
         if (datos.length == 0) {
@@ -265,8 +264,14 @@ public class UIArriendoEquipos {
             System.out.println("No ha ingresado ningún dato, por favor inténtelo de nuevo");
             return;
         }
-        if (Integer.parseInt(tipoEquipo) < 0 || Integer.parseInt(tipoEquipo) > 2) {
-            System.out.println("Por favor, ingrese una opción valida");
+        try {
+            precioArriendoDia = Long.parseLong(precio);
+            if (precioArriendoDia < 0) {
+                System.out.println("Por favor ingrese un precio válido");
+                return;
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Por favor ingrese solo numeros");
             return;
         }
         switch (tipoEquipo) {
@@ -310,18 +315,17 @@ public class UIArriendoEquipos {
         }
     }
 
-
     public void listaArriendos() {
         LocalDate inicio, fin;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
         try {
-            System.out.print("Fecha inicio periodo (dd/mm/aaaa):");
+            System.out.print("Fecha inicio preiodo (dd/mm/aaaa):");
             inicio = LocalDate.parse(teclado.next(), formatter);
             System.out.print("Fecha fin (dd/mm/aaaa):");
             fin = LocalDate.parse(teclado.next(), formatter);
         } catch (DateTimeParseException e) {
-            System.out.println("La fecha no tiene un formato valido");
+            System.out.println("La fecha no tieene un formato valido");
             return;
         }
         ControladorArriendoEquipos controlador = ControladorArriendoEquipos.getInstance();
@@ -470,6 +474,3 @@ public class UIArriendoEquipos {
         return validacion;
     }
 }
-
-
-

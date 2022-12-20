@@ -40,6 +40,15 @@ public class ControladorArriendoEquipos {
         clientes.add(cliente);
     }
 
+    public void creaEquipo(long codigo, String descripcion, long precioArriendoDia) throws EquipoException {
+        for (Equipo equipo : equipos) {
+            if (equipo.getCodigo() == codigo) {
+                throw new EquipoException("Ya existe el equipo indicado");
+            }
+        }
+        Equipo equipo = new Equipo(codigo, descripcion, precioArriendoDia);
+        equipos.add(equipo);
+    }
 
     public long creaArriendo(String rutCliente) throws ClienteException {
         Cliente cliente = buscaCliente(rutCliente);
@@ -338,7 +347,7 @@ public class ControladorArriendoEquipos {
         }
 
         ArrayList<String[]> datos = new ArrayList<>();
-        for (Arriendo arriendo : arriendos) {
+        for (Arriendo arriendo: arriendos) {
             LocalDate fechaInicio = arriendo.getFechaInicio();
             if (!fechaInicio.isBefore(inicio) && !fechaInicio.isAfter(fin)) {
                 String[] texto = new String[6];
@@ -404,7 +413,7 @@ public class ControladorArriendoEquipos {
         }
 
         Equipo[] equiposArriendo = arriendo.getEquipos();
-        for (int i = 0; i < equiposArriendo.length; i++) {
+        for (int i=0; i<equiposArriendo.length; i++) {
             equiposArriendo[i].setEstado(estadoEquipos[i]);
         }
 
