@@ -1,9 +1,10 @@
 package Modelo;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Objects;
 
-public abstract class Equipo {
+public abstract class Equipo implements Serializable {
     private long codigo;
     private String descripcion;
     private EstadoEquipo estado;

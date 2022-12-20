@@ -5,13 +5,13 @@ import Excepciones.ClienteException;
 import Excepciones.EquipoException;
 import Modelo.*;
 
+import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
 
-public class ControladorArriendoEquipos {
+
+public class ControladorArriendoEquipos implements Serializable {
     private static Controlador.ControladorArriendoEquipos instance = null;
     private final ArrayList<Cliente> clientes;
     private final ArrayList<Equipo> equipos;
@@ -28,6 +28,144 @@ public class ControladorArriendoEquipos {
             instance = new Controlador.ControladorArriendoEquipos();
         }
         return instance;
+    }
+
+    public String[][] listaPagosDeArriendo(long codArriendo) throws ArriendoException {
+        Arriendo arriendoCod = buscaArriendo(codArriendo);
+        if (arriendoCod != null) {
+            if (!arriendoCod.getEstado().equals(EstadoArriendo.INICIADO) || !arriendoCod.getEstado().equals(EstadoArriendo.ENTREGADO)) {
+                return arriendoCod.getPagosToString();
+            } else {
+                throw new ArriendoException("Arriendo no se encuentra habilitado para pagos");
+            }
+        } else {
+            throw new ArriendoException("No existe un arriendo con el codigo dado");
+        }
+    }
+
+    public String[][] listaArriendosPagados() {
+        int contadorArriendos = 0;
+        String[][] listadoArriendoConPago;
+        for (Arriendo arriendo : arriendos) {
+            if (arriendo.getMontoPagado() > 0) {
+                contadorArriendos++;
+            }
+        }
+        if (contadorArriendos > 0) {
+            listadoArriendoConPago = new String[contadorArriendos][7];
+            int i = 0;
+            for (Arriendo arriendo : arriendos) {
+                if (arriendo.getMontoPagado() > 0) {
+                    listadoArriendoConPago[i][0] = arriendo.getCodigo() + "";
+                    listadoArriendoConPago[i][1] = arriendo.getEstado() + "";
+                    listadoArriendoConPago[i][2] = arriendo.getCliente().getRut();
+                    listadoArriendoConPago[i][3] = arriendo.getCliente().getNombre();
+                    listadoArriendoConPago[i][4] = arriendo.getMontoTotal() + "";
+                    listadoArriendoConPago[i][5] = arriendo.getMontoPagado() + "";
+                    listadoArriendoConPago[i][6] = arriendo.getSaldoAdeudado() + "";
+                    i++;
+                }
+            }
+            return listadoArriendoConPago;
+        }
+        return new String[0][0];
+
+    }
+
+    public void saveDatosSistema() throws ArriendoException {
+        ObjectOutputStream guardaArchivo;
+        try {
+            guardaArchivo = new ObjectOutputStream(new FileOutputStream("Archivo"));
+            guardaArchivo.writeObject(this);
+            guardaArchivo.close();
+        } catch (IOException e) {
+            throw new ArriendoException("No ha sido posible guardar datos del sistema en archivo");
+        }
+    }
+
+    public void readDatosSistema() throws ArriendoException {
+        ObjectInputStream leeArchivo;
+        try {
+            leeArchivo = new ObjectInputStream(new FileInputStream("Archivo"));
+            ArrayList<ControladorArriendoEquipos> lectura = new ArrayList<>();
+            lectura.add((ControladorArriendoEquipos) leeArchivo.readObject());
+            leeArchivo.close();
+        } catch (ClassNotFoundException | IOException e) {
+            throw new ArriendoException("No ha sido posible leer datos del sistema desde archivo");
+        }
+    }
+
+    public String[] consultaArriendoAPagar(long codigo) {
+        String[] consultaArriendo = new String[7];
+        Arriendo arriendoCod = buscaArriendo(codigo);
+        if (arriendoCod.getEstado().equals(EstadoArriendo.DEVUELTO) && arriendoCod != null) {
+            consultaArriendo[0] = String.valueOf(codigo);
+            consultaArriendo[1] = arriendoCod.getEstado().toString().toLowerCase().trim();
+            consultaArriendo[2] = arriendoCod.getCliente().getRut().trim();
+            consultaArriendo[3] = arriendoCod.getCliente().getNombre().trim();
+            consultaArriendo[4] = String.valueOf(arriendoCod.getMontoTotal());
+            consultaArriendo[5] = String.valueOf(arriendoCod.getMontoPagado());
+            consultaArriendo[6] = String.valueOf(arriendoCod.getSaldoAdeudado());
+            return consultaArriendo;
+        }
+        return new String[0];
+    }
+
+    public void pagaArriendoCredito(long codArriendo, long monto, String codTransaccion, String numTarjeta, int nroCuotas) throws ArriendoException {
+        LocalDate fechaActual = LocalDate.now();
+        Arriendo arriendoCod = buscaArriendo(codArriendo);
+        if (arriendoCod == null) {
+            throw new ArriendoException("No existe un arriendo asociado al codigo");
+        }
+        if (arriendoCod.getEstado() != EstadoArriendo.DEVUELTO) {
+            throw new ArriendoException("No se han devuelto el o los equipos arrendados");
+        }
+        if (arriendoCod.getSaldoAdeudado() < monto) {
+            throw new ArriendoException("El monto supera el saldo adeudado");
+        }
+
+        Credito pago = new Credito(monto, fechaActual, codTransaccion, numTarjeta, nroCuotas);
+        arriendoCod.addPagoCredito(pago);
+    }
+
+
+    public void pagaArriendoDebito(long codArriendo, long monto, String codTransaccion, String numTarjeta) throws ArriendoException {
+        LocalDate fechaActual = LocalDate.now();
+        Arriendo arriendoCod = buscaArriendo(codArriendo);
+        if (arriendoCod != null) {
+            if (arriendoCod.getEstado().equals(EstadoArriendo.DEVUELTO)) {
+                if (monto >= arriendoCod.getSaldoAdeudado()) {
+                    Debito pago = new Debito(monto, fechaActual, codTransaccion, numTarjeta);
+                } else {
+                    throw new ArriendoException("El monto supera el saldo adeudado");
+                }
+            } else {
+                throw new ArriendoException("No se han devuelto el o los equipos arrendados");
+            }
+        } else {
+            throw new ArriendoException("No existe un arriendo asociado al codigo");
+        }
+
+    }
+
+    public void pagaArriendoContado(long codArriendo, long monto) throws ArriendoException {
+        LocalDate fechaActual = LocalDate.now();
+        Arriendo precioContado = buscaArriendo(codArriendo);
+        if (precioContado != null) {
+            if (precioContado.getEstado().equals(EstadoArriendo.DEVUELTO)) {
+                if (monto <= precioContado.getSaldoAdeudado()) {
+                    Contado pago = new Contado(monto, fechaActual);
+                    precioContado.addPagoContado(pago);
+                } else {
+                    throw new ArriendoException("El monto es superior al saldo adeudado");
+
+                }
+            } else {
+                throw new ArriendoException("No se ha devuelta todabia el o los equipos arrendados");
+            }
+        } else {
+            throw new ArriendoException("No existe un arriendo asociado al codigo");
+        }
     }
 
     public void creaCliente(String rut, String nom, String dir, String tel) throws ClienteException {
@@ -220,32 +358,6 @@ public class ControladorArriendoEquipos {
         return datos;
     }
 
-    //aiuda
-    private boolean validarRut(String rut) {
-        boolean validacion = false;
-        try {
-            rut = rut.toUpperCase();
-            rut = rut.replace(".", "");
-            rut = rut.replace("-", "");
-            int rutAux = Integer.parseInt(rut.substring(0, rut.length() - 1));
-
-            char dv = rut.charAt(rut.length() - 1);
-
-            int m = 0, s = 1;
-            for (; rutAux != 0; rutAux /= 10) {
-                s = (s + rutAux % 10 * (9 - m++ % 6)) % 11;
-            }
-            if (dv == (char) (s != 0 ? s + 47 : 75)) {
-                validacion = true;
-            }
-
-        } catch (java.lang.NumberFormatException e) {
-        } catch (Exception e) {
-
-        }
-        return validacion;
-    }
-
     private boolean validarCodigo(long codigo) {
         int longitud = String.valueOf(codigo).length();
         try {
@@ -347,7 +459,7 @@ public class ControladorArriendoEquipos {
         }
 
         ArrayList<String[]> datos = new ArrayList<>();
-        for (Arriendo arriendo: arriendos) {
+        for (Arriendo arriendo : arriendos) {
             LocalDate fechaInicio = arriendo.getFechaInicio();
             if (!fechaInicio.isBefore(inicio) && !fechaInicio.isAfter(fin)) {
                 String[] texto = new String[6];
@@ -413,7 +525,7 @@ public class ControladorArriendoEquipos {
         }
 
         Equipo[] equiposArriendo = arriendo.getEquipos();
-        for (int i=0; i<equiposArriendo.length; i++) {
+        for (int i = 0; i < equiposArriendo.length; i++) {
             equiposArriendo[i].setEstado(estadoEquipos[i]);
         }
 
