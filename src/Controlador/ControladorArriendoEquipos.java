@@ -31,18 +31,19 @@ public class ControladorArriendoEquipos implements Serializable {
         return instance;
     }
 
-    public String[][] listaPagosDeArriendo(long codArriendo) throws ArriendoException{
-        Arriendo arriendoCod=buscaArriendo(codArriendo);
-        if(arriendoCod!=null){
-            if(!arriendoCod.getEstado().equals(EstadoArriendo.INICIADO) || !arriendoCod.getEstado().equals(EstadoArriendo.ENTREGADO)){
+    public String[][] listaPagosDeArriendo(long codArriendo) throws ArriendoException {
+        Arriendo arriendoCod = buscaArriendo(codArriendo);
+        if (arriendoCod != null) {
+            if (!arriendoCod.getEstado().equals(EstadoArriendo.INICIADO) || !arriendoCod.getEstado().equals(EstadoArriendo.ENTREGADO)) {
                 return arriendoCod.getPagosToString();
-            }else{
+            } else {
                 throw new ArriendoException("Arriendo no se encuentra habilitado para pagos");
             }
-        }else{
+        } else {
             throw new ArriendoException("No existe un arriendo con el codigo dado");
         }
     }
+
     public String[][] listaArriendosPagados() {
         int contadorArriendos = 0;
         String[][] listadoArriendoConPago;
@@ -78,10 +79,6 @@ public class ControladorArriendoEquipos implements Serializable {
             guardaArchivo = new ObjectOutputStream(new FileOutputStream("Archivo"));
             guardaArchivo.writeObject(this);
             guardaArchivo.close();
-        } catch (IIOException e) {
-            throw new ArriendoException("No ha sido posible guardar datos del sistema en archivo");
-        } catch (FileNotFoundException e) {
-            throw new ArriendoException("No ha sido posible guardar datos del sistema en archivo");
         } catch (IOException e) {
             throw new ArriendoException("No ha sido posible guardar datos del sistema en archivo");
         }
@@ -94,13 +91,7 @@ public class ControladorArriendoEquipos implements Serializable {
             ArrayList<ControladorArriendoEquipos> lectura = new ArrayList<>();
             lectura.add((ControladorArriendoEquipos) leeArchivo.readObject());
             leeArchivo.close();
-        } catch (IIOException e) {
-            throw new ArriendoException("No ha sido posible leer datos del sistema desde archivo");
-        } catch (ClassNotFoundException e) {
-            throw new ArriendoException("No ha sido posible leer datos del sistema desde archivo");
-        } catch (FileNotFoundException e) {
-            throw new ArriendoException("No ha sido posible leer datos del sistema desde archivo");
-        } catch (IOException e) {
+        } catch (ClassNotFoundException | IOException e) {
             throw new ArriendoException("No ha sido posible leer datos del sistema desde archivo");
         }
     }
@@ -124,21 +115,20 @@ public class ControladorArriendoEquipos implements Serializable {
     public void pagaArriendoCredito(long codArriendo, long monto, String codTransaccion, String numTarjeta, int nroCuotas) throws ArriendoException {
         LocalDate fechaActual = LocalDate.now();
         Arriendo arriendoCod = buscaArriendo(codArriendo);
-        if (arriendoCod != null) {
-            if (arriendoCod.getEstado().equals(EstadoArriendo.DEVUELTO)) {
-                if (arriendoCod.getSaldoAdeudado() <= monto) {
-                    Credito pago = new Credito(monto, fechaActual, codTransaccion, numTarjeta, nroCuotas);
-                    arriendoCod.addPagoCredito(pago);
-                } else {
-                    throw new ArriendoException("El monto supera el saldo adeudado");
-                }
-            } else {
-                throw new ArriendoException("No se han devuelto el o los equipos arrendados");
-            }
-        } else {
+        if (arriendoCod == null) {
             throw new ArriendoException("No existe un arriendo asociado al codigo");
         }
+        if (arriendoCod.getEstado() != EstadoArriendo.DEVUELTO) {
+            throw new ArriendoException("No se han devuelto el o los equipos arrendados");
+        }
+        if (arriendoCod.getSaldoAdeudado() < monto) {
+            throw new ArriendoException("El monto supera el saldo adeudado");
+        }
+
+        Credito pago = new Credito(monto, fechaActual, codTransaccion, numTarjeta, nroCuotas);
+        arriendoCod.addPagoCredito(pago);
     }
+
 
     public void pagaArriendoDebito(long codArriendo, long monto, String codTransaccion, String numTarjeta) throws ArriendoException {
         LocalDate fechaActual = LocalDate.now();
@@ -164,7 +154,7 @@ public class ControladorArriendoEquipos implements Serializable {
         Arriendo precioContado = buscaArriendo(codArriendo);
         if (precioContado != null) {
             if (precioContado.getEstado().equals(EstadoArriendo.DEVUELTO)) {
-                if (monto >= precioContado.getSaldoAdeudado()) {
+                if (monto <= precioContado.getSaldoAdeudado()) {
                     Contado pago = new Contado(monto, fechaActual);
                     precioContado.addPagoContado(pago);
                 } else {
@@ -367,32 +357,6 @@ public class ControladorArriendoEquipos implements Serializable {
         datos[6] = arriendo.getMontoTotal() + "";
 
         return datos;
-    }
-
-    //aiuda
-    private boolean validarRut(String rut) {
-        boolean validacion = false;
-        try {
-            rut = rut.toUpperCase();
-            rut = rut.replace(".", "");
-            rut = rut.replace("-", "");
-            int rutAux = Integer.parseInt(rut.substring(0, rut.length() - 1));
-
-            char dv = rut.charAt(rut.length() - 1);
-
-            int m = 0, s = 1;
-            for (; rutAux != 0; rutAux /= 10) {
-                s = (s + rutAux % 10 * (9 - m++ % 6)) % 11;
-            }
-            if (dv == (char) (s != 0 ? s + 47 : 75)) {
-                validacion = true;
-            }
-
-        } catch (java.lang.NumberFormatException e) {
-        } catch (Exception e) {
-
-        }
-        return validacion;
     }
 
     private boolean validarCodigo(long codigo) {
