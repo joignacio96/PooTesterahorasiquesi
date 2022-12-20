@@ -4,9 +4,7 @@ import Controlador.ControladorArriendoEquipos;
 import Excepciones.ArriendoException;
 import Excepciones.ClienteException;
 import Excepciones.EquipoException;
-import Modelo.Arriendo;
-import Modelo.Cliente;
-import Modelo.EstadoEquipo;
+import Modelo.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -224,6 +222,10 @@ public class UIArriendoEquipos {
             System.out.println("No ha ingresado ningún dato, por favor inténtelo de nuevo");
             return;
         }
+        if (!tel.matches("[0-9]+")) {
+            System.out.println("Por favor, ingrese solo numeros");
+            return;
+        }
         try {
             ControladorArriendoEquipos.getInstance().creaCliente(rut, nom, dir, tel);
             System.out.println("Usted ha creado satisfactoriamente el cliente");
@@ -232,11 +234,12 @@ public class UIArriendoEquipos {
         }
     }
 
-    private void creaEquipo() {
-        String descripcion, code, precio;
+
+    private void creaEquipo() throws EquipoException {
+        String descripcion, code, precio, tipoEquipo;
         long codigo = 0, precioArriendoDia = 0;
         System.out.print("Creando un nuevo equipo... ");
-        System.out.println("\n\n\nCodigo: ");
+        System.out.println("\n\nCodigo: ");
         code = teclado.next().trim();
 
         if (code.isBlank() || code.isEmpty()) {
@@ -255,9 +258,9 @@ public class UIArriendoEquipos {
             System.out.println("No ha ingresado ningún dato, por favor inténtelo de nuevo");
             return;
         }
-        System.out.print("Precio arriendo por dia: ");
-        precio = teclado.next().trim();
-        if (precio.isBlank() || precio.isEmpty()) {
+        System.out.println("Tipo equipo (1: Implemento, 2: Conjunto):");
+        tipoEquipo = teclado.next().trim();
+        if (tipoEquipo.isBlank() || tipoEquipo.isEmpty()) {
             System.out.println("No ha ingresado ningún dato, por favor inténtelo de nuevo");
             return;
         }
@@ -271,11 +274,44 @@ public class UIArriendoEquipos {
             System.out.println("Por favor ingrese solo numeros");
             return;
         }
+        switch (tipoEquipo) {
+            case "1":
+                System.out.print("Precio arriendo por dia: ");
+                precio = teclado.next().trim();
+                if (precio.isBlank() || precio.isEmpty()) {
+                    System.out.println("No ha ingresado ningún dato, por favor inténtelo de nuevo");
+                    return;
+                }
+                try {
+                    precioArriendoDia = Long.parseLong(precio);
+                    if (precioArriendoDia < 0) {
+                        System.out.println("Por favor ingrese un precio válido");
+                        return;
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("Por favor ingrese solo numeros");
+                    return;
+                }
+                Implemento implemento = new Implemento(codigo, descripcion, precioArriendoDia);
+                System.out.println("Se ha creado exitosamente un nuevo implemento");
+                return;
 
-        try {
-            ControladorArriendoEquipos.getInstance().creaEquipo(codigo, descripcion, precioArriendoDia);
-        } catch (EquipoException e) {
-            System.out.println("Error creando el equipo, intentelo de nuevo");
+            case "2":
+                System.out.println("Numero de equipos componentes:");
+                int numComponentes = teclado.nextInt();
+                long[] codEquipos = new long[numComponentes];
+                for (int i = 0; i < numComponentes; i++) {
+                    System.out.println("Codigo equipo " + i + " de " + numComponentes);
+                    long codEquipo = teclado.nextLong();
+                    codEquipos[i] = codEquipo;
+                }
+                try {
+                    ControladorArriendoEquipos.getInstance().creaConjunto(codigo, descripcion, codEquipos);
+                } catch (EquipoException e) {
+                    e.getMessage();
+                }
+                System.out.println("\nSe ha creado exitosamente un nuevo conjunto");
+
         }
     }
 
