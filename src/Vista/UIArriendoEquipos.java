@@ -42,10 +42,10 @@ public class UIArriendoEquipos {
             System.out.println("3. Arrienda equipos");
             System.out.println("4. Devuelve equipos");
             System.out.println("5. Cambia estado de un cliente");
-            System.out.println("6. Lista de todos los clientes");
-            System.out.println("7. Lista de todos los equipos");
-            System.out.println("8. Lista todos los arriendos");
-            System.out.println("9. Lista detalles de un arriendo");
+            System.out.println("6. Paga arriendo");
+            System.out.println("7. Genera reportes");
+            System.out.println("8. Cargar datos desde archivo");
+            System.out.println("9. Guardar datos a archivo");
             System.out.println("10. Salir");
             System.out.println("\n\n\nIngrese opcion: ");
 
@@ -63,10 +63,22 @@ public class UIArriendoEquipos {
                 case 3 -> arriendaEquipos();        // Funciona
                 case 4 -> devuelveEquipos();        // Funciona
                 case 5 -> cambiaEstadoCliente();    // Funciona
-                case 6 -> listaClientes();          // Funciona
-                case 7 -> listaEquipos();           // Funciona
-                case 8 -> listaArriendos();         // Funciona
-                case 9 -> listaDetallesArriendo();  // Funciona
+                case 6 -> pagaArriendo();
+                case 7 -> generaReportes();           // Funciona
+                case 8 -> {
+                    try {
+                        ControladorArriendoEquipos.getInstance().readDatosSistema();
+                    } catch (ArriendoException e) {
+                        throw new RuntimeException(e);
+                    }
+                }         // Funciona
+                case 9 -> {
+                    try {
+                        ControladorArriendoEquipos.getInstance().saveDatosSistema();
+                    } catch (ArriendoException e) {
+                        throw new RuntimeException(e);
+                    }
+                }  // Funciona
                 case 10 -> System.exit(2);    // Funciona
                 default -> System.out.println("\nIngreso no valido");
             }
@@ -255,28 +267,55 @@ public class UIArriendoEquipos {
             System.out.println("No ha ingresado ningún dato, por favor inténtelo de nuevo");
             return;
         }
-        System.out.print("Precio arriendo por dia: ");
-        precio = teclado.next().trim();
-        if (precio.isBlank() || precio.isEmpty()) {
-            System.out.println("No ha ingresado ningún dato, por favor inténtelo de nuevo");
-            return;
-        }
-        try {
-            precioArriendoDia = Long.parseLong(precio);
-            if (precioArriendoDia < 0) {
-                System.out.println("Por favor ingrese un precio válido");
+        System.out.println("Tipo equipo (1:Implemento, 2: Conjunto):");
+        long tipo;
+        tipo=teclado.nextInt();
+        if(tipo==1){
+            System.out.print("Precio arriendo por dia: ");
+            precio = teclado.next().trim();
+            if (precio.isBlank() || precio.isEmpty()) {
+                System.out.println("No ha ingresado ningún dato, por favor inténtelo de nuevo");
                 return;
             }
-        } catch (NumberFormatException e) {
-            System.out.println("Por favor ingrese solo numeros");
-            return;
+            try {
+                precioArriendoDia = Long.parseLong(precio);
+                if (precioArriendoDia < 0) {
+                    System.out.println("Por favor ingrese un precio válido");
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Por favor ingrese solo numeros");
+                return;
+            }
+
+            try {
+                ControladorArriendoEquipos.getInstance().creaImplemento(codigo, descripcion, precioArriendoDia);
+            } catch (EquipoException e) {
+                System.out.println("Error creando el equipo, intentelo de nuevo");
+            }
+        }
+        if (tipo==2){
+            System.out.println("Numero de equipos componentes:");
+            int cantidad= teclado.nextInt();
+            long[] componente=new long[cantidad];
+            for(int i=0;i<cantidad;i++){
+                System.out.println("Codigo equipo "+i+" de "+cantidad+":");
+                String componenteString = teclado.next();
+                try {
+                    componente[i] = Long.parseLong(componenteString);
+                } catch (NumberFormatException e) {
+                    System.out.println("El numero ingresado no es valido");
+                    return;
+                }
+            }
+            try{
+                ControladorArriendoEquipos.getInstance().creaConjunto(codigo, descripcion, componente);
+            }catch (EquipoException e){
+                System.out.println("Codigo de un equipo componente es incorrecto");
+            }
+            System.out.println("Se ha creado exitosamente un nuevo implemento");
         }
 
-        try {
-            ControladorArriendoEquipos.getInstance().creaEquipo(codigo, descripcion, precioArriendoDia);
-        } catch (EquipoException e) {
-            System.out.println("Error creando el equipo, intentelo de nuevo");
-        }
     }
 
     public void listaArriendos() {
